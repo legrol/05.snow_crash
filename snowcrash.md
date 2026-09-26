@@ -1,3 +1,4 @@
+<img width="864" height="620" alt="image0" src="https://github.com/user-attachments/assets/192bd115-3c41-47ab-a8e3-f6663a218440" />
 # SnowCrash
 
 ## Descripción
@@ -73,15 +74,16 @@ En nuestro caso, observamos que la IP está configurada:
 
 enp0s3: 10.0.2.15
 
-IMAGE0
+<img width="864" height="620" alt="image0" src="https://github.com/user-attachments/assets/35958d45-bae7-4822-9f2a-810313ff377f" />
 
 Ahora accedemos en la configuración de la OVA en la zona Red / Adaptador 1
 
-IMAGE1
+<img width="1766" height="1326" alt="image1" src="https://github.com/user-attachments/assets/c34457e4-1019-4972-98e1-6a5e665d7dd3" />
 
 hacemos click en Reenvío de puertos y dejamos esta configuración:
 
-IMAGE2
+<img width="1596" height="1076" alt="image2" src="https://github.com/user-attachments/assets/67ec0fa3-3506-4bc2-a43d-83d523bd1d1f" />
+<img width="1030" height="710" alt="image3" src="https://github.com/user-attachments/assets/d345c31f-085f-4393-890e-438b86b274a3" />
 
 Notar que hemos configurado en el Hot Anfitrión el puerto 2424, ya que el 4242 (recomendado) en 42 Málaga se haya ocupado por otros servicios.
 
@@ -97,6 +99,11 @@ o
 ssh level00@localhost -p 2424
 
 ```
+
+<img width="1030" height="710" alt="image3" src="https://github.com/user-attachments/assets/7b918ef7-3999-4c6e-88c0-ad96945002fd" />
+
+
+
 
 
 
