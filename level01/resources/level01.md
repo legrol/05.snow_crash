@@ -4,13 +4,13 @@
 
 Encontrar la credencial que permite conectarse al usuario `level02`.
 
-Esta OVA es diferente de la version clasica del reto. No incluye `getflag`,
-`john` ni `hashcat`, y la cuenta `flag01` esta configurada con
+Esta OVA es diferente de la versión clásica del reto. No incluye `getflag`,
+`john` ni `hashcat`, y la cuenta `flag01` está configurada con
 `/usr/sbin/nologin`.
 
 ## 1. Identificar el entorno
 
-Desde la sesion SSH de `level01`:
+Desde la sesión SSH de `level01`:
 
 ```bash
 whoami
@@ -28,10 +28,10 @@ snowcrash
 flag01:x:2001:2001::/home/flag01:/usr/sbin/nologin
 ```
 
-El campo `x` indica que la contrasena no esta en `/etc/passwd`. Ademas,
-`flag01` no puede iniciar una sesion normal porque su shell es `nologin`.
+El campo `x` indica que la contraseña no está en `/etc/passwd`. Además,
+`flag01` no puede iniciar una sesión normal porque su shell es `nologin`.
 
-## 2. Descartar la ruta clasica
+## 2. Descartar la ruta clásica
 
 El directorio personal contiene estos archivos:
 
@@ -48,8 +48,8 @@ Gargoyles never stop collecting.
 42hDRfypTqqnw --show
 ```
 
-`42hDRfypTqqnw` tiene el formato de un hash DES antiguo. La opcion
-`--show` no forma parte del hash; es una opcion de John the Ripper.
+`42hDRfypTqqnw` tiene el formato de un hash DES antiguo. La opción
+`--show` no forma parte del hash; es una opción de John the Ripper.
 
 La OVA no trae esas herramientas:
 
@@ -58,13 +58,13 @@ command -v john
 command -v hashcat
 ```
 
-Python si incluye el modulo `crypt`, por lo que se puede verificar el hash:
+Python sí incluye el módulo `crypt`, por lo que se puede verificar el hash:
 
 ```bash
 python3 -c 'import crypt; print(crypt.crypt("abcdefg", "42") == "42hDRfypTqqnw")'
 ```
 
-El resultado es `True`, pero `abcdefg` no es la contrasena activa de
+El resultado es `True`, pero `abcdefg` no es la contraseña activa de
 `flag01`. Esto se confirma al intentar:
 
 ```bash
@@ -72,12 +72,12 @@ su -s /bin/bash flag01
 ```
 
 El resultado es `su: Authentication failure`. El hash pertenece a la pista
-del reto clasico, no al mecanismo de autenticacion de esta OVA.
+del reto clásico, no al mecanismo de autenticación de esta OVA.
 
 ## 3. Localizar el componente propio de la OVA
 
 Buscar archivos propiedad de `flag01` y binarios SUID muestra el programa
-especifico del nivel:
+específico del nivel:
 
 ```bash
 find / -xdev -user flag01 -ls 2>/dev/null
@@ -91,8 +91,8 @@ El archivo relevante es:
 /opt/snowcrash/level01/gargoyle
 ```
 
-El `README` daba la pista `Gargoyles never stop collecting`, asi que se
-inspecciono el servicio que lo ejecuta:
+El `README` daba la pista `Gargoyles never stop collecting`, así que se
+inspeccionó el servicio que lo ejecuta:
 
 ```bash
 cat /etc/systemd/system/gargoyle.service
@@ -129,7 +129,7 @@ El valor encontrado es:
 kooda7puivaav1idi4f57q8iq0
 ```
 
-No es la contrasena de `flag01`; intentar usarlo con `su flag01` falla porque
+No es la contraseña de `flag01`; intentar usarlo con `su flag01` falla porque
 esa cuenta esta bloqueada o tiene otra contrasena. Es la credencial de acceso
 al siguiente nivel.
 
@@ -147,15 +147,15 @@ Cuando SSH solicite la contrasena, introducir:
 kooda7puivaav1idi4f57q8iq0
 ```
 
-La conexion correcta muestra:
+La conexión correcta muestra:
 
 ```text
 level02@snowcrash:~$
 ```
 
-## Conclusion
+## Conclusión
 
-La ruta clasica basada en `/etc/passwd`, DES y `getflag` no es valida para
-esta imagen. La solucion de esta OVA v2 consiste en leer la configuracion del
+La ruta clásica basada en `/etc/passwd`, DES y `getflag` no es válida para
+esta imagen. La solución de esta OVA v2 consiste en leer la configuración del
 servicio `gargoyle`, observar el argumento del proceso que se ejecuta como
 `flag01` y reutilizar ese valor como credencial de `level02`.
