@@ -1,4 +1,3 @@
-<img width="864" height="620" alt="image0" src="https://github.com/user-attachments/assets/192bd115-3c41-47ab-a8e3-f6663a218440" />
 # SnowCrash
 
 ## Descripción
