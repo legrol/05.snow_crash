@@ -2,6 +2,7 @@
 
 <img width="1536" height="1024" alt="snowcrash42" src="https://github.com/user-attachments/assets/b37a6ea2-af3a-4c33-80c3-55ff9507dd42" />
 
+<br><br>
 
 ## Descripción
 
@@ -79,20 +80,27 @@ En nuestro caso, observamos que la IP está configurada:
 ```text
 enp0s3: 10.0.2.15
 ```
+<br><br>
+
 <img width="864" height="620" alt="image0" src="https://github.com/user-attachments/assets/35958d45-bae7-4822-9f2a-810313ff377f" />
 
+<br><br>
 
 Ahora accedemos en la configuración de la OVA en la zona Red / Adaptador 1
 
+<br><br>
 
 <img width="1766" height="1326" alt="image1" src="https://github.com/user-attachments/assets/c34457e4-1019-4972-98e1-6a5e665d7dd3" />
 
+<br><br>
 
 hacemos click en Reenvío de puertos y dejamos esta configuración:
 
+<br><br>
 
 <img width="1596" height="1076" alt="image2" src="https://github.com/user-attachments/assets/67ec0fa3-3506-4bc2-a43d-83d523bd1d1f" />
 
+<br><br>
 
 Notar que hemos configurado en el Hot Anfitrión el puerto 2424, ya que el 4242 (recomendado) en 42 Málaga se haya ocupado por otros servicios.
 
