@@ -90,6 +90,7 @@ hacemos click en Reenvío de puertos y dejamos esta configuración:
 
 <img width="1596" height="1076" alt="image2" src="https://github.com/user-attachments/assets/67ec0fa3-3506-4bc2-a43d-83d523bd1d1f" />
 
+```
 
 Notar que hemos configurado en el Hot Anfitrión el puerto 2424, ya que el 4242 (recomendado) en 42 Málaga se haya ocupado por otros servicios.
 
