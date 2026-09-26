@@ -1,5 +1,7 @@
 # SnowCrash
 
+<br><br>
+
 <img width="1536" height="1024" alt="snowcrash42" src="https://github.com/user-attachments/assets/b37a6ea2-af3a-4c33-80c3-55ff9507dd42" />
 
 <br><br>
@@ -122,6 +124,9 @@ ssh level00@localhost -p 2424
 
 
 
+<br><br>
+<br><br>
+<br><br>
 
 
 REVISAR LO SIGUIENTE
