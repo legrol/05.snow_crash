@@ -171,6 +171,7 @@ level04/resources/level04.md
 level05/resources/level05.md
 level06/resources/level06.md
 level07/resources/level07.md
+level08/resources/level08.md
 ```
 
 El directorio `resources` también puede incluir archivos auxiliares necesarios
@@ -203,6 +204,10 @@ level06/resources/
 level07/resources/
 ├── level07.md
 └── sandbox-escape.expr
+
+level08/resources/
+├── blacksun_client.py
+└── level08.md
 ```
 
 Los archivos auxiliares tienen estas funciones:
@@ -222,6 +227,8 @@ Los archivos auxiliares tienen estas funciones:
 	explotar la evaluación de expresiones regulares Perl en `level06`.
 - `sandbox-escape.expr` contiene la expresión Python utilizada para escapar del
 	validador restringido de `level07`.
+- `blacksun_client.py` implementa el cliente del protocolo Unix utilizado para
+	saltar la autenticación de `level08`.
 
 Los niveles que todavía no se han resuelto conservan su directorio y su
 archivo `flag`, pero sus recursos se completarán al documentar cada ejercicio.
