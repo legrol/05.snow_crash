@@ -170,6 +170,7 @@ level03/resources/level03.md
 level04/resources/level04.md
 level05/resources/level05.md
 level06/resources/level06.md
+level07/resources/level07.md
 ```
 
 El directorio `resources` también puede incluir archivos auxiliares necesarios
@@ -198,6 +199,10 @@ level05/resources/
 level06/resources/
 ├── level06.md
 └── raven-payload.conf
+
+level07/resources/
+├── level07.md
+└── sandbox-escape.expr
 ```
 
 Los archivos auxiliares tienen estas funciones:
@@ -215,6 +220,8 @@ Los archivos auxiliares tienen estas funciones:
 	leer temporalmente `/home/flag05/.flag`.
 - `raven-payload.conf` contiene la configuración temporal utilizada para
 	explotar la evaluación de expresiones regulares Perl en `level06`.
+- `sandbox-escape.expr` contiene la expresión Python utilizada para escapar del
+	validador restringido de `level07`.
 
 Los niveles que todavía no se han resuelto conservan su directorio y su
 archivo `flag`, pero sus recursos se completarán al documentar cada ejercicio.
