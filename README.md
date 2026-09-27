@@ -172,6 +172,7 @@ level05/resources/level05.md
 level06/resources/level06.md
 level07/resources/level07.md
 level08/resources/level08.md
+level09/resources/level09.md
 ```
 
 El directorio `resources` también puede incluir archivos auxiliares necesarios
@@ -208,6 +209,9 @@ level07/resources/
 level08/resources/
 ├── blacksun_client.py
 └── level08.md
+
+level09/resources/
+└── level09.md
 ```
 
 Los archivos auxiliares tienen estas funciones:
