@@ -169,6 +169,7 @@ level02/resources/level02.md
 level03/resources/level03.md
 level04/resources/level04.md
 level05/resources/level05.md
+level06/resources/level06.md
 ```
 
 El directorio `resources` también puede incluir archivos auxiliares necesarios
@@ -193,6 +194,10 @@ level04/resources/
 level05/resources/
 ├── level05.md
 └── metaverse-exploit.wat
+
+level06/resources/
+├── level06.md
+└── raven-payload.conf
 ```
 
 Los archivos auxiliares tienen estas funciones:
@@ -208,6 +213,8 @@ Los archivos auxiliares tienen estas funciones:
 	`esyscmd` de `m4`.
 - `metaverse-exploit.wat` contiene el módulo WebAssembly textual utilizado para
 	leer temporalmente `/home/flag05/.flag`.
+- `raven-payload.conf` contiene la configuración temporal utilizada para
+	explotar la evaluación de expresiones regulares Perl en `level06`.
 
 Los niveles que todavía no se han resuelto conservan su directorio y su
 archivo `flag`, pero sus recursos se completarán al documentar cada ejercicio.
