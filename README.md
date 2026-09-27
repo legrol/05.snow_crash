@@ -173,6 +173,7 @@ level06/resources/level06.md
 level07/resources/level07.md
 level08/resources/level08.md
 level09/resources/level09.md
+level10/resources/level10.md
 ```
 
 El directorio `resources` también puede incluir archivos auxiliares necesarios
@@ -212,6 +213,11 @@ level08/resources/
 
 level09/resources/
 └── level09.md
+
+level10/resources/
+├── enzo-injection.wat
+├── find_injection_token.py
+└── level10.md
 ```
 
 Los archivos auxiliares tienen estas funciones:
@@ -233,6 +239,9 @@ Los archivos auxiliares tienen estas funciones:
 	validador restringido de `level07`.
 - `blacksun_client.py` implementa el cliente del protocolo Unix utilizado para
 	saltar la autenticación de `level08`.
+- `find_injection_token.py` calcula un campo con firma válida para seleccionar
+	el handler vulnerable de `level10`.
+- `enzo-injection.wat` emite el token manipulado que consume `validate.js`.
 
 Los niveles que todavía no se han resuelto conservan su directorio y su
 archivo `flag`, pero sus recursos se completarán al documentar cada ejercicio.
