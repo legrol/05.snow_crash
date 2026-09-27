@@ -1,5 +1,10 @@
 # SnowCrash - Level 00
 
+## Tipo de ejercicio
+
+Escalada de privilegios mediante un binario con permisos **setuid** y
+extracción de una credencial expuesta dentro del ejecutable.
+
 ## Objetivo
 
 Encontrar una forma de ejecutar el programa perteneciente a `flag00` y obtener la credencial necesaria para continuar con el nivel siguiente.

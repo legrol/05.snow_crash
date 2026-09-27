@@ -1,5 +1,11 @@
 # Level01 - Snow Crash v2
 
+## Tipo de ejercicio
+
+Análisis de credenciales expuestas en la configuración y en los argumentos de
+un servicio `systemd`, junto con el reconocimiento de una pista de hash DES
+heredada de la versión clásica.
+
 ## Objetivo
 
 Encontrar la credencial que permite conectarse al usuario `level02`.
@@ -58,7 +64,17 @@ command -v john
 command -v hashcat
 ```
 
-Python sí incluye el módulo `crypt`, por lo que se puede verificar el hash:
+Python sí incluye el módulo `crypt`, por lo que se puede verificar el hash.
+El script utilizado está disponible en [verify_hash.py](verify_hash.py).
+
+Si el archivo se ha copiado previamente a la OVA, se puede ejecutar así:
+
+```bash
+python3 verify_hash.py
+```
+
+Como alternativa, se puede ejecutar directamente la comprobación sin crear un
+archivo auxiliar:
 
 ```bash
 python3 -c 'import crypt; print(crypt.crypt("abcdefg", "42") == "42hDRfypTqqnw")'

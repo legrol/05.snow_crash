@@ -1,5 +1,10 @@
 # Level02 - Snow Crash v2
 
+## Tipo de ejercicio
+
+Fuga de credenciales mediante un archivo temporal persistente y legible que
+deja un servicio después de procesar una entrega.
+
 ## Objetivo
 
 Encontrar la credencial que permite conectarse al usuario `level03`.
