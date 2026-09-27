@@ -21,6 +21,9 @@ El proyecto permite estudiar problemas de seguridad de diferentes tipos, como:
 - Comunicaciones de red sin protección.
 - Trabajos automatizados mal gestionados en las máquinas.
 
+La tabla de credenciales recuperadas está disponible en
+[flags.md](flags.md).
+
 ## Encontrar y validar las banderas
 
 En el sistema hay dos tipos principales de cuentas de usuario:
