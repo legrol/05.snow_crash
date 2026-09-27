@@ -14,7 +14,21 @@ Tabla de credenciales y flags recuperadas durante la resolución de la OVA v2.
 | Level07 | `wizelohxamaiuiia2uinaes4a` | `fiumuikeil8rung8ahcuiperb` |
 | Level08 | `fiumuikeil8rung8ahcuiperb` | `s5cAhoAfNT9GrgqykhZavyBg9` |
 | Level09 | `s5cAhoAfNT9GrgqykhZavyBg9` | `s19q3m3u4toaequegh8ahpicel` |
-| Level10 | `s19q3m3u4toaequegh8ahpicel` | `g457ws0du8osi4t4tlea00cxe` |
+| Level10 (boss final) | `s19q3m3u4toaequegh8ahpicel` | `g457ws0du8osi4t4tlea00cxe` |
 
-> Nota: cada flag se utiliza como contraseña del nivel siguiente. `Level10` es
-> el boss fight obligatorio y su flag es la credencial del siguiente acceso.
+> Nota: cada flag se utiliza como contraseña del nivel siguiente hasta `Level09`.
+> `Level10` es el boss fight final disponible en esta OVA y su valor es la
+> última flag del recorrido mandatory.
+
+## Bonus pendientes
+
+Las carpetas bonus ya tienen la estructura requerida, pero todavía no se han
+recuperado sus credenciales:
+
+| Bonus / Cuenta | Contraseña de entrada | Flag obtenida |
+| --- | --- | --- |
+| Bonus01 | Pendiente | Pendiente |
+| Bonus02 | Pendiente | Pendiente |
+| Bonus03 | Pendiente | Pendiente |
+| Bonus04 | Pendiente | Pendiente |
+| Bonus05 | Pendiente | Pendiente |

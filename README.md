@@ -12,8 +12,10 @@ SnowCrash es un proyecto de tipo CTF (Capture The Flag) centrado en la seguridad
 
 El repositorio actual contiene 11 niveles, del `level00` al `level10`:
 
-- Los niveles `level00` a `level09` son obligatorios.
-- El nivel `level10` es una bonificación.
+- Los niveles `level00` a `level10` son obligatorios.
+- `level10` es el boss fight final del recorrido mandatory.
+- La parte bonus está formada por `bonus01` a `bonus05` y se investiga después
+	del mandatory.
 
 El proyecto permite estudiar problemas de seguridad de diferentes tipos, como:
 
@@ -28,7 +30,8 @@ La tabla de credenciales recuperadas está disponible en
 
 En el sistema hay dos tipos principales de cuentas de usuario:
 
-- `levelXX`: cuenta correspondiente al nivel actual. `XX` representa el número del nivel, por ejemplo `level00`, `level01` o `level11`.
+- `levelXX`: cuenta correspondiente a los niveles mandatory. `XX` representa el
+	número del nivel, por ejemplo `level00`, `level01` o `level10`.
 - `flagXX`: cuenta asociada a cada nivel, por ejemplo `flag00`, `flag01` o `flag11`.
 
 Normalmente hay que encontrar la contraseña de la cuenta `flagXX` correspondiente al nivel actual. Por ejemplo, en `level03` hay que encontrar la contraseña que permite iniciar sesión como `flag03`.
@@ -136,7 +139,7 @@ ssh level00@localhost -p 2424
 
 El repositorio contiene un directorio para cada nivel, con el formato
 `levelXX`. En esta versión del proyecto están disponibles los niveles
-`level00` a `level10`:
+`level00` a `level10`, además de las carpetas reservadas para los bonus:
 
 ```text
 level00/
@@ -150,12 +153,17 @@ level07/
 level08/
 level09/
 level10/
+bonus01/
+bonus02/
+bonus03/
+bonus04/
+bonus05/
 ```
 
-Cada nivel contiene:
+Cada nivel mandatory y cada bonus contiene:
 
 ```text
-levelXX/
+levelXX/ o bonusNN/
 ├── flag
 └── resources/
 ```
@@ -177,6 +185,11 @@ level07/resources/level07.md
 level08/resources/level08.md
 level09/resources/level09.md
 level10/resources/level10.md
+bonus01/resources/bonus01.md
+bonus02/resources/bonus02.md
+bonus03/resources/bonus03.md
+bonus04/resources/bonus04.md
+bonus05/resources/bonus05.md
 ```
 
 El directorio `resources` también puede incluir archivos auxiliares necesarios
@@ -221,6 +234,21 @@ level10/resources/
 ├── enzo-injection.wat
 ├── find_injection_token.py
 └── level10.md
+
+bonus01/resources/
+└── bonus01.md
+
+bonus02/resources/
+└── bonus02.md
+
+bonus03/resources/
+└── bonus03.md
+
+bonus04/resources/
+└── bonus04.md
+
+bonus05/resources/
+└── bonus05.md
 ```
 
 Los archivos auxiliares tienen estas funciones:
@@ -246,5 +274,6 @@ Los archivos auxiliares tienen estas funciones:
 	el handler vulnerable de `level10`.
 - `enzo-injection.wat` emite el token manipulado que consume `validate.js`.
 
-Los niveles que todavía no se han resuelto conservan su directorio y su
-archivo `flag`, pero sus recursos se completarán al documentar cada ejercicio.
+Los bonus todavía no se han resuelto. Sus directorios y archivos `flag` están
+preparados, pero las credenciales y las explicaciones se completarán al
+investigar cada ejercicio.

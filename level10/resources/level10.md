@@ -7,7 +7,8 @@ y explotación de una inyección de comandos en un handler JavaScript.
 
 ## Objetivo
 
-Encontrar la credencial que permite conectarse al usuario `level11`.
+Obtener la flag final del recorrido mandatory. Después comienza la parte bonus
+con `bonus01`, cuyas credenciales se investigan por separado.
 
 Este nivel encadena dos tecnologías: `enzo.wasm` genera la entrada y
 `validate.js` la valida y despacha a un comando del sistema.
@@ -134,7 +135,7 @@ El resultado fue:
 g457ws0du8osi4t4tlea00cxe
 ```
 
-## 7. Restaurar el servidor y conectar al siguiente nivel
+## 7. Restaurar el servidor y cerrar el recorrido obligatorio
 
 Se restaura inmediatamente el WASM original:
 
@@ -142,22 +143,19 @@ Se restaura inmediatamente el WASM original:
 cp /tmp/enzo-original.wasm /opt/snowcrash/level10/enzo.wasm
 ```
 
-Desde el equipo anfitrión:
+Las cuentas bonus existen en la OVA y se pueden comprobar con:
 
 ```bash
-exit
-ssh level11@localhost -p 2424
+getent passwd bonus01 bonus02 bonus03 bonus04 bonus05
 ```
 
-Contraseña:
-
-```text
-g457ws0du8osi4t4tlea00cxe
-```
+El boss fight `level10` cierra el recorrido mandatory. La flag
+`g457ws0du8osi4t4tlea00cxe` permite continuar con la investigación de
+`bonus01`, pero no es necesariamente su contraseña de acceso.
 
 ## Conclusión
 
 `level10` encadena un módulo WASM manipulable con un validador JavaScript que
 construye comandos con datos no escapados. Se reconstruyó el formato del token,
 se calculó una firma válida que selecciona `logger`, se inyectó `cat` y se
-restauró el WASM original tras recuperar la credencial de `level11`.
+restauró el WASM original tras recuperar la flag final del recorrido.
