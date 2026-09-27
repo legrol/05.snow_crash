@@ -10,10 +10,10 @@
 
 SnowCrash es un proyecto de tipo CTF (Capture The Flag) centrado en la seguridad informática. Se proporciona una OVA de Linux (x64, Ubuntu) y el objetivo es encontrar las distintas banderas.
 
-El proyecto tiene 15 niveles, del `level00` al `level14`:
+El repositorio actual contiene 11 niveles, del `level00` al `level10`:
 
 - Los niveles `level00` a `level09` son obligatorios.
-- Los niveles `level10` a `level14` son bonificaciones.
+- El nivel `level10` es una bonificación.
 
 El proyecto permite estudiar problemas de seguridad de diferentes tipos, como:
 
@@ -129,34 +129,68 @@ ssh level00@localhost -p 2424
 <br><br>
 
 
-REVISAR LO SIGUIENTE
-
-
-
 ## Estructura del proyecto
 
-El repositorio debe contener un directorio para cada nivel, con el formato `levelXX`. Por ejemplo, los cuatro primeros niveles serían:
+El repositorio contiene un directorio para cada nivel, con el formato
+`levelXX`. En esta versión del proyecto están disponibles los niveles
+`level00` a `level10`:
 
 ```text
-$> ls -al
-drwxr-xr-x 2 root root 4096 Dec 3 XX:XX level00
-drwxr-xr-x 2 root root 4096 Dec 3 XX:XX level01
-drwxr-xr-x 2 root root 4096 Dec 3 XX:XX level02
-drwxr-xr-x 2 root root 4096 Dec 3 XX:XX level03
+level00/
+level01/
+level02/
+level03/
+level04/
+level05/
+level06/
+level07/
+level08/
+level09/
+level10/
 ```
 
-Dentro de cada directorio debe existir un archivo llamado `flag` con la explicación del proceso utilizado para obtener la bandera.
-
-También puede existir un directorio `resources` que contenga los archivos necesarios para demostrar o reproducir el proceso. Todo lo incluido en ese directorio debe explicarse durante la corrección.
-
-Un ejemplo de estructura para `level00` es:
+Cada nivel contiene:
 
 ```text
-$> ls -alR level00
-level00:
-total 16
-drwxr-xr-x 3 root root 4096 Dec 3 15:22 .
-drwxr-xr-x 6 root root 4096 Dec 3 15:20 ..
--rw-r--r-- 1 root root    5 Dec 3 15:22 flag
-drwxr-xr-x 2 root root 4096 Dec 3 15:22 resources
+levelXX/
+├── flag
+└── resources/
 ```
+
+El archivo `flag` contiene la credencial o el token obtenido al resolver el
+nivel. La explicación del proceso no se guarda dentro de `flag`, sino en el
+Markdown correspondiente de `resources`, cuando esa documentación ya está
+disponible:
+
+```text
+level00/resources/level00.md
+level01/resources/level01.md
+level02/resources/level02.md
+level03/resources/level03.md
+```
+
+El directorio `resources` también puede incluir archivos auxiliares necesarios
+para reproducir el ejercicio. Todos ellos deben estar descritos en su guía
+correspondiente. Por ejemplo:
+
+```text
+level01/resources/
+├── level01.md
+└── verify_hash.py
+
+level03/resources/
+├── build-extract.cmake
+├── build-recon.cmake
+└── level03.md
+```
+
+Los archivos auxiliares tienen estas funciones:
+
+- `verify_hash.py` comprueba el hash DES de la pista heredada de `level01`.
+- `build-recon.cmake` realiza el reconocimiento inicial del directorio de
+	`flag03`.
+- `build-extract.cmake` extrae la credencial de `level03` mediante el runner
+	de CMake ejecutado como `flag03`.
+
+Los niveles que todavía no se han resuelto conservan su directorio y su
+archivo `flag`, pero sus recursos se completarán al documentar cada ejercicio.
