@@ -168,6 +168,7 @@ level01/resources/level01.md
 level02/resources/level02.md
 level03/resources/level03.md
 level04/resources/level04.md
+level05/resources/level05.md
 ```
 
 El directorio `resources` también puede incluir archivos auxiliares necesarios
@@ -188,6 +189,10 @@ level04/resources/
 ├── babel-extract.m4
 ├── babel-recon.m4
 └── level04.md
+
+level05/resources/
+├── level05.md
+└── metaverse-exploit.wat
 ```
 
 Los archivos auxiliares tienen estas funciones:
@@ -201,6 +206,8 @@ Los archivos auxiliares tienen estas funciones:
 	la plantilla Babel.
 - `babel-extract.m4` extrae la credencial de `level04` mediante la macro
 	`esyscmd` de `m4`.
+- `metaverse-exploit.wat` contiene el módulo WebAssembly textual utilizado para
+	leer temporalmente `/home/flag05/.flag`.
 
 Los niveles que todavía no se han resuelto conservan su directorio y su
 archivo `flag`, pero sus recursos se completarán al documentar cada ejercicio.
