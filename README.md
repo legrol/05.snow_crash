@@ -167,6 +167,7 @@ level00/resources/level00.md
 level01/resources/level01.md
 level02/resources/level02.md
 level03/resources/level03.md
+level04/resources/level04.md
 ```
 
 El directorio `resources` también puede incluir archivos auxiliares necesarios
@@ -182,6 +183,11 @@ level03/resources/
 ├── build-extract.cmake
 ├── build-recon.cmake
 └── level03.md
+
+level04/resources/
+├── babel-extract.m4
+├── babel-recon.m4
+└── level04.md
 ```
 
 Los archivos auxiliares tienen estas funciones:
@@ -191,6 +197,10 @@ Los archivos auxiliares tienen estas funciones:
 	`flag03`.
 - `build-extract.cmake` extrae la credencial de `level03` mediante el runner
 	de CMake ejecutado como `flag03`.
+- `babel-recon.m4` lista el directorio de `flag04` durante el procesamiento de
+	la plantilla Babel.
+- `babel-extract.m4` extrae la credencial de `level04` mediante la macro
+	`esyscmd` de `m4`.
 
 Los niveles que todavía no se han resuelto conservan su directorio y su
 archivo `flag`, pero sus recursos se completarán al documentar cada ejercicio.
