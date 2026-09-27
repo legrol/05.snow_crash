@@ -32,7 +32,9 @@ En el sistema hay dos tipos principales de cuentas de usuario:
 
 - `levelXX`: cuenta correspondiente a los niveles mandatory. `XX` representa el
 	número del nivel, por ejemplo `level00`, `level01` o `level10`.
-- `flagXX`: cuenta asociada a cada nivel, por ejemplo `flag00`, `flag01` o `flag11`.
+- `flagXX`: cuenta asociada a cada nivel mandatory, por ejemplo `flag00`,
+	`flag01` o `flag10`. En la parte bonus, las cuentas usan nombres como
+	`flagbonus01`.
 
 Normalmente hay que encontrar la contraseña de la cuenta `flagXX` correspondiente al nivel actual. Por ejemplo, en `level03` hay que encontrar la contraseña que permite iniciar sesión como `flag03`.
 
