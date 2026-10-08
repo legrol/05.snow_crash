@@ -259,6 +259,31 @@ Los archivos auxiliares tienen estas funciones:
 	el handler vulnerable de `level10`.
 - `enzo-injection.wat` emite el token manipulado que consume `validate.js`.
 
+## Resumen de los ejercicios
+
+- **level00:** escalada de privilegios mediante un binario con permisos
+	`setuid` y extracción de una credencial expuesta dentro del ejecutable.
+- **level01:** exposición de credenciales en los argumentos de un servicio
+	`systemd` ejecutado con los privilegios de `flag01`.
+- **level02:** fuga de una credencial mediante un archivo temporal persistente
+	dejado por un servicio de entrega.
+- **level03:** escalada de privilegios mediante un servicio `systemd` que
+	ejecuta un archivo CMake escribible por el grupo del usuario.
+- **level04:** inyección de comandos en una plantilla `m4` procesada con los
+	privilegios de `flag04`.
+- **level05:** reemplazo temporal de un módulo WebAssembly escribible y
+	ejecución privilegiada mediante un servicio periódico.
+- **level06:** ejecución de código Perl dentro de una expresión regular
+	controlada mediante `use re 'eval'`.
+- **level07:** escape de un sandbox Python mediante introspección de objetos y
+	acceso a módulos ya cargados.
+- **level08:** bypass de autenticación en un protocolo binario por un fallo de
+	control de estados en un socket Unix.
+- **level09:** validación de un token mediante un binario `setuid` y una cadena
+	válida expuesta en sus datos legibles.
+- **level10:** boss fight que combina la reconstrucción de un token WebAssembly
+	con una inyección de comandos en un handler JavaScript.
+
 Los bonus todavía no se han resuelto. Sus directorios y archivos `flag` están
 preparados, pero las credenciales y las explicaciones se completarán al
 investigar cada ejercicio.
