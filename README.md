@@ -178,8 +178,10 @@ correspondiente. Por ejemplo:
 
 ```text
 level01/resources/
-├── level01.md
-└── verify_hash.py
+└── level01.md
+
+level02/resources/
+└── level02.md
 
 level03/resources/
 ├── build-extract.cmake
@@ -233,7 +235,6 @@ bonus05/resources/
 
 Los archivos auxiliares tienen estas funciones:
 
-- `verify_hash.py` comprueba el hash DES de la pista heredada de `level01`.
 - `build-recon.cmake` realiza el reconocimiento inicial del directorio de
 	`flag03`.
 - `build-extract.cmake` extrae la credencial de `level03` mediante el runner
