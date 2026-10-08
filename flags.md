@@ -27,7 +27,7 @@ recuperado sus credenciales:
 
 | Bonus / Cuenta | Contraseña de entrada | Flag obtenida |
 | --- | --- | --- |
-| Bonus01 | Pendiente | Pendiente |
+| Bonus01 | bonus01 | bonus01 |
 | Bonus02 | Pendiente | Pendiente |
 | Bonus03 | Pendiente | Pendiente |
 | Bonus04 | Pendiente | Pendiente |

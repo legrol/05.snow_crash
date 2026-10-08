@@ -59,14 +59,9 @@ Para iniciar el proyecto, hay que abrir la OVA en una máquina virtual, como VMw
 
 Si se utiliza VirtualBox, no es necesario configurar la red en modo puente, con el modo NAT por defecto es suficiente.
 
-Tras haber importado la OVA, la abrimos para comporbar la IP de la misma. 
-
-Nos pedirá un login y un password. En nuestro primer nivel level00 será:
-
-```text
-login: level00
-password: level00
-```
+Tras haber importado la OVA, la dejamos arrancada en su pantalla de login. No
+es necesario iniciar sesión en la consola de la máquina virtual: todos los
+niveles se resuelven desde el equipo anfitrión mediante SSH.
 
 En nuestro caso, observamos que la IP está configurada:
 
@@ -99,7 +94,7 @@ Notar que hemos configurado en el Hot Anfitrión el puerto 2424, ya que el 4242 
 
 Según el tema de 42, se debe acceder a la máquina mediante SSH usando el puerto `4242` (nosotros gestionaremos el 2424). 
 
-Ahora nos conectaremos vía ssh desde una terminal con:
+Ahora nos conectaremos vía SSH desde una terminal del equipo anfitrión con:
 
 ```bash
 ssh level00@127.0.0.1 -p 2424

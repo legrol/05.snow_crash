@@ -76,20 +76,9 @@ El programa valida la credencial y muestra un acceso concedido para `flag00`. Es
 
 ## 6. Continuar con el siguiente nivel
 
-Una vez descubierta la clave, primero hay que salir de la sesión SSH abierta en la terminal:
-
-```bash
-exit
-```
-
-Después hay que abrir la ventana de la OVA en la máquina virtual. Desde la consola de la máquina virtual, se sale también de la sesión de `level00` usando `exit`. Cuando aparezca el inicio de sesión, se accede con el usuario `level01` y la clave descubierta en el ejercicio anterior:
-
-```text
-login: level01
-password: f2av5il02puano7naaf6adaf3a
-```
-
-Una vez comprobado el acceso desde la consola de la OVA, se vuelve a la terminal local y se realiza la conexión SSH con el usuario del siguiente nivel:
+La OVA puede permanecer en la pantalla de login. No es necesario iniciar sesión
+en la consola de la máquina virtual para cambiar de nivel. Desde el equipo
+anfitrión se abre una nueva conexión SSH con el usuario del siguiente nivel:
 
 ```bash
 ssh level01@localhost -p 2424
