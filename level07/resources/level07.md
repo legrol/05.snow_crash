@@ -1,4 +1,4 @@
-# Level07 - Snow Crash v2
+# Level07 - Snow Crash
 
 ## Tipo de ejercicio
 
@@ -9,8 +9,7 @@ módulo del proceso para ejecutar comandos del sistema.
 
 Encontrar la credencial que permite conectarse al usuario `level08`.
 
-La guía clásica utiliza un binario `setuid` que construye un comando con la
-variable `LOGNAME`. Esta OVA v2 presenta un validador Python restringido: las
+El nivel presenta un validador Python restringido: las
 entradas no se ejecutan como comandos Bash, sino como expresiones Python.
 
 ## 1. Reconocer el validador

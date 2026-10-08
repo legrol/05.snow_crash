@@ -1,6 +1,6 @@
 # Flags
 
-Tabla de credenciales y flags recuperadas durante la resolución de la OVA v2.
+Tabla de credenciales y flags recuperadas durante la resolución de la OVA actual.
 
 | Nivel / Cuenta | Contraseña de entrada | Flag obtenida |
 | --- | --- | --- |

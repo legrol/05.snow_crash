@@ -36,31 +36,14 @@ En el sistema hay dos tipos principales de cuentas de usuario:
 	`flag01` o `flag10`. En la parte bonus, las cuentas usan nombres como
 	`flagbonus01`.
 
-Normalmente hay que encontrar la contraseña de la cuenta `flagXX` correspondiente al nivel actual. Por ejemplo, en `level03` hay que encontrar la contraseña que permite iniciar sesión como `flag03`.
+El objetivo de cada nivel mandatory es obtener la flag protegida del usuario
+asociado. En esta OVA, esa flag es la contraseña utilizada para conectarse al
+siguiente nivel mediante SSH. El método cambia en cada ejercicio: puede ser un
+binario `setuid`, un servicio, una plantilla, un protocolo o un sandbox.
 
-Después de acceder como `flagXX`, se ejecuta el programa `getflag`, que muestra la bandera del nivel. Esa bandera es también la contraseña del siguiente nivel. Por ejemplo, la bandera obtenida desde `flag03` permite iniciar sesión como `level04`.
-
-El flujo habitual es el siguiente:
-
-```bash
-# Encontrar la contraseña de la cuenta flag03
-level03@SnowCrash:~$ su flag03
-Password:
-
-flag03@SnowCrash:~$ getflag
-Check flag. Here is your token: XXXXXXXXXXXXXXXXXXXXXXXXX
-
-flag03@SnowCrash:~$ su level04
-Password:  # La contraseña es la bandera obtenida en flag03
-```
-
-No siempre es necesario iniciar sesión como `flagXX` para obtener la bandera. En algunos niveles la bandera se encuentra directamente desde la cuenta `levelXX`, y en otros no es necesario ejecutar `getflag`.
-
-El binario `getflag` se encuentra normalmente en:
-
-```text
-/bin/getflag
-```
+Las guías de `resources/` documentan el recorrido real de cada nivel y los
+archivos `flag` contienen las credenciales recuperadas. Cada ejercicio tiene
+su propio mecanismo para revelar la flag.
 
 ## Recursos
 

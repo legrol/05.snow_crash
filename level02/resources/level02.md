@@ -1,4 +1,4 @@
-# Level02 - Snow Crash v2
+# Level02 - Snow Crash
 
 ## Tipo de ejercicio
 
@@ -9,9 +9,7 @@ deja un servicio después de procesar una entrega.
 
 Encontrar la credencial que permite conectarse al usuario `level03`.
 
-La guía clásica de Snow Crash indica que este nivel utiliza un archivo
-`level02.pcap` para recuperar una contraseña escrita en una captura de red.
-Sin embargo, esta OVA v2 utiliza un mecanismo diferente.
+El nivel utiliza el servicio `kourier` y un archivo temporal de entrega.
 
 ## 1. Inspeccionar el nivel
 
@@ -31,8 +29,8 @@ El README contiene la pista:
 A Kourier never loses a package. Even after delivery.
 ```
 
-El directorio personal no contiene ningún archivo `level02.pcap`, por lo que
-la solución clásica basada en Wireshark o TShark no aplica a esta imagen.
+El directorio personal no contiene archivos adicionales; la pista conduce al
+servicio `kourier` instalado en `/opt/snowcrash/level02`.
 
 ## 2. Buscar archivos relacionados
 
@@ -140,11 +138,7 @@ level03@snowcrash:~$
 
 ## Conclusión
 
-La solución clásica de `level02` analiza un archivo PCAP y reconstruye una
-contraseña a partir de los caracteres enviados por la red. Esa captura no
-existe en esta OVA v2.
-
-En esta versión, la pista de Kourier conduce al proceso
+La pista de Kourier conduce al proceso
 `/opt/snowcrash/level02/kourier` y al archivo temporal
 `/tmp/kourier_delivery.tmp`. El archivo permanece después de la entrega y es
 legible, por lo que contiene directamente la credencial de `level03`:

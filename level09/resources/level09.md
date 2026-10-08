@@ -1,4 +1,4 @@
-# Level09 - Snow Crash v2
+# Level09 - Snow Crash
 
 ## Tipo de ejercicio
 
@@ -9,8 +9,7 @@ interna y expone una cadena válida en sus datos legibles.
 
 Encontrar la credencial que permite conectarse al usuario `level10`.
 
-La versión clásica utiliza un token codificado y un programa que transforma
-cada carácter según su posición. Esta OVA v2 utiliza el validador `da5id`, que
+El validador `da5id` comprueba un token de 12 caracteres y
 comprueba una cadena de 12 caracteres antes de leer el flag de `flag09`.
 
 ## 1. Identificar el componente del nivel
@@ -133,8 +132,7 @@ s19q3m3u4toaequegh8ahpicel
 
 ## Conclusión
 
-La OVA v2 no utiliza el token codificado del ejercicio clásico. El binario
-`da5id` funciona como un validador `setuid`, contiene la cadena válida
+El binario `da5id` funciona como un validador `setuid`, contiene la cadena válida
 `Iheartpwnage` y, al aceptarla, lee `/home/flag09/.flag` como `flag09`.
 
 No fue necesario modificar archivos de la OVA ni crear scripts auxiliares.

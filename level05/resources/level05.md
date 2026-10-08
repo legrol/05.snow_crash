@@ -1,4 +1,4 @@
-# Level05 - Snow Crash v2
+# Level05 - Snow Crash
 
 ## Tipo de ejercicio
 
@@ -9,8 +9,7 @@ usuarios y ejecución privilegiada del módulo mediante un servicio `systemd`.
 
 Encontrar la credencial que permite conectarse al usuario `level06`.
 
-La guía clásica utiliza un trabajo `cron` y `openarenaserver`. En esta OVA v2
-no existe esa ruta: el mecanismo real es un runtime WebAssembly llamado
+El mecanismo real es un runtime WebAssembly llamado
 `metaverse`.
 
 ## 1. Identificar el componente del nivel
@@ -172,7 +171,7 @@ viuaaale9huek52boumoomioc
 
 ## Conclusión
 
-La OVA v2 reemplaza el cron clásico por un servicio `systemd` que ejecuta un
+Un servicio `systemd` ejecuta un
 módulo WebAssembly como `flag05`. La pertenencia de `level05` al grupo
 `metaverse` permite escribir temporalmente el módulo. El payload WASI lee el
 archivo protegido `.flag`, recupera la credencial de `level06` y después se

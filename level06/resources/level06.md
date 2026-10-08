@@ -1,4 +1,4 @@
-# Level06 - Snow Crash v2
+# Level06 - Snow Crash
 
 ## Tipo de ejercicio
 
@@ -10,9 +10,8 @@ el grupo correspondiente.
 
 Encontrar la credencial que permite conectarse al usuario `level07`.
 
-La versión clásica usa un script PHP vulnerable a `preg_replace` con el
-modificador `/e`. En esta OVA v2 el mismo concepto aparece en Perl mediante
-`use re 'eval'` y un patrón regular obtenido de `raven.conf`.
+La vulnerabilidad aparece en Perl mediante `use re 'eval'` y un patrón regular
+obtenido de `raven.conf`.
 
 ## 1. Identificar el componente del nivel
 

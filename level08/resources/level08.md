@@ -1,4 +1,4 @@
-# Level08 - Snow Crash v2
+# Level08 - Snow Crash
 
 ## Tipo de ejercicio
 
@@ -9,8 +9,7 @@ en un daemon accesible por socket Unix.
 
 Encontrar la credencial que permite conectarse al usuario `level09`.
 
-La versión clásica bloquea el nombre `token` y se puede sortear con un enlace
-simbólico. Esta OVA v2 utiliza el daemon `blacksun`, que expone un protocolo de
+El daemon `blacksun` expone un protocolo de
 sesiones `HELLO -> AUTH -> ADMIN`.
 
 ## 1. Localizar el daemon
@@ -26,8 +25,7 @@ cat README
 find /home/level08 -maxdepth 2 -ls
 ```
 
-El README clásico no existe en esta imagen. El componente del nivel se
-localiza así:
+El componente del nivel se localiza así:
 
 ```bash
 find /opt/snowcrash/level08 -maxdepth 2 -ls 2>/dev/null

@@ -1,4 +1,4 @@
-# Level03 - Snow Crash v2
+# Level03 - Snow Crash
 
 ## Tipo de ejercicio
 
@@ -9,9 +9,7 @@ un archivo CMake controlado por un grupo con permisos de escritura.
 
 Encontrar la credencial que permite conectarse al usuario `level04`.
 
-La guía clásica de Snow Crash presenta este nivel como un ataque de
-interceptación de `PATH` contra un binario SUID. En esta OVA v2 no aparece ese
-binario; el ejercicio utiliza un runner de CMake ejecutado como `flag03`.
+El ejercicio utiliza un runner de CMake ejecutado como `flag03`.
 
 ## 1. Inspeccionar el entorno
 
@@ -260,9 +258,7 @@ level04@snowcrash:~$
 
 ## Conclusión
 
-La versión clásica de `level03` explota un binario SUID que llama a `echo`
-mediante `PATH`. Esta OVA v2 utiliza una vulnerabilidad diferente: un servicio
-periódico se ejecuta como `flag03` y carga un `build.cmake` desde un directorio
+Un servicio periódico se ejecuta como `flag03` y carga un `build.cmake` desde un directorio
 en el que `level03` puede escribir por pertenecer al grupo `burbclave`.
 
 El payload CMake permitió ejecutar `/bin/cat` con los permisos de `flag03` y

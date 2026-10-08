@@ -1,4 +1,4 @@
-# Level04 - Snow Crash v2
+# Level04 - Snow Crash
 
 ## Tipo de ejercicio
 
@@ -9,10 +9,7 @@ usuarios y procesada periódicamente con los privilegios de `flag04`.
 
 Encontrar la credencial que permite conectarse al usuario `level05`.
 
-La versión clásica de Snow Crash utiliza un CGI de Perl en el puerto `4747`
-con una vulnerabilidad de inyección de comandos. En esta OVA v2 no hay ningún
-servicio escuchando en ese puerto ni existe `getflag`; el mecanismo real es el
-generador de configuración `babel`.
+El mecanismo es el generador de configuración `babel`.
 
 ## 1. Inspeccionar el nivel
 
@@ -31,8 +28,8 @@ El README contiene la pista:
 In the beginning was the Word.
 ```
 
-El directorio personal no contiene el CGI clásico. En cambio, existe un
-script de configuración:
+El directorio personal no contiene archivos adicionales. El script de
+configuración se encuentra en:
 
 ```bash
 ls -la /opt/snowcrash/level04
@@ -197,8 +194,7 @@ level05@snowcrash:~$
 
 ## Conclusión
 
-La solución clásica basada en un CGI de Perl y el puerto `4747` no aplica a
-esta OVA v2. La solución real consiste en aprovechar que `level04` pertenece
+La solución consiste en aprovechar que `level04` pertenece
 al grupo `babel` y puede modificar la plantilla `template.m4`.
 
 El servicio `babel`, ejecutado como `flag04`, procesa esa plantilla cada 30

@@ -1,4 +1,4 @@
-# Level10 - Snow Crash v2
+# Level10 - Snow Crash
 
 ## Tipo de ejercicio
 

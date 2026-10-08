@@ -1,18 +1,16 @@
-# Level01 - Snow Crash v2
+# Level01 - Snow Crash
 
 ## Tipo de ejercicio
 
 Análisis de credenciales expuestas en la configuración y en los argumentos de
-un servicio `systemd`, junto con el reconocimiento de una pista de hash DES
-heredada de la versión clásica.
+un servicio `systemd`, junto con el reconocimiento de una pista de hash DES.
 
 ## Objetivo
 
 Encontrar la credencial que permite conectarse al usuario `level02`.
 
-Esta OVA es diferente de la versión clásica del reto. No incluye `getflag`,
-`john` ni `hashcat`, y la cuenta `flag01` está configurada con
-`/usr/sbin/nologin`.
+La cuenta `flag01` está configurada con `/usr/sbin/nologin`. El acceso se
+obtiene analizando el servicio que se ejecuta como ese usuario.
 
 ## 1. Identificar el entorno
 
@@ -37,7 +35,7 @@ flag01:x:2001:2001::/home/flag01:/usr/sbin/nologin
 El campo `x` indica que la contraseña no está en `/etc/passwd`. Además,
 `flag01` no puede iniciar una sesión normal porque su shell es `nologin`.
 
-## 2. Descartar la ruta clásica
+## 2. Analizar la pista del hash
 
 El directorio personal contiene estos archivos:
 
@@ -87,8 +85,8 @@ El resultado es `True`, pero `abcdefg` no es la contraseña activa de
 su -s /bin/bash flag01
 ```
 
-El resultado es `su: Authentication failure`. El hash pertenece a la pista
-del reto clásico, no al mecanismo de autenticación de esta OVA.
+El resultado es `su: Authentication failure`. El hash permite verificar una
+contraseña, pero no es el mecanismo de autenticación activo de `flag01`.
 
 ## 3. Localizar el componente propio de la OVA
 
@@ -171,7 +169,6 @@ level02@snowcrash:~$
 
 ## Conclusión
 
-La ruta clásica basada en `/etc/passwd`, DES y `getflag` no es válida para
-esta imagen. La solución de esta OVA v2 consiste en leer la configuración del
-servicio `gargoyle`, observar el argumento del proceso que se ejecuta como
+La solución consiste en leer la configuración del servicio `gargoyle`,
+observar el argumento del proceso que se ejecuta como
 `flag01` y reutilizar ese valor como credencial de `level02`.
