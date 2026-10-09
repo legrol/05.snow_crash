@@ -9,7 +9,10 @@ un archivo CMake controlado por un grupo con permisos de escritura.
 
 Encontrar la credencial que permite conectarse al usuario `level04`.
 
-El ejercicio utiliza un runner de CMake ejecutado como `flag03`.
+El ejercicio aprovecha un servicio de `systemd` que ejecuta CMake como
+`flag03`. El servicio carga `build.cmake` desde un directorio que `level03`
+puede modificar. Por tanto, `level03` puede conseguir que sus instrucciones
+se ejecuten con los permisos de `flag03`.
 
 ## 1. Inspeccionar el entorno
 
@@ -31,13 +34,38 @@ Every Burbclave has rules. Find the loophole.
 ```
 
 El directorio personal no contiene un ejecutable `level03`, por lo que se
-buscan componentes instalados para este nivel:
+buscan los componentes instalados y los archivos relacionados con `flag03`.
+El objetivo es localizar qué programa se ejecuta con privilegios y puede estar
+relacionado con el nivel:
 
 ```bash
 find /opt/snowcrash/level03 -maxdepth 2 -ls 2>/dev/null
+```
+
+Esta orden examina el directorio donde están instalados los componentes del
+nivel. `-maxdepth 2` limita la búsqueda al directorio y sus subdirectorios
+inmediatos, `-ls` muestra sus permisos, propietario y ruta, y
+`2>/dev/null` oculta los errores de permisos.
+
+```bash
 find / -xdev -user flag03 -ls 2>/dev/null
+```
+
+Esta búsqueda recorre el sistema de archivos desde `/` y localiza los archivos
+propiedad de `flag03`. `-xdev` evita entrar en otros sistemas de archivos
+montados, `-user flag03` filtra por propietario y `-ls` muestra los detalles
+de cada resultado. Así se puede identificar el script o programa que se
+ejecuta con la identidad de `flag03`.
+
+```bash
 find / -xdev -type f -perm -4000 -ls 2>/dev/null
 ```
+
+Esta orden busca archivos normales (`-type f`) con el permiso `SUID`
+(`-perm -4000`). El permiso SUID hace que un ejecutable se ejecute con los
+permisos de su propietario, por lo que estos archivos pueden ser relevantes en
+una búsqueda de escalada de privilegios. En este nivel, la búsqueda sirve para
+comprobar si existe algún ejecutable SUID relacionado.
 
 El resultado relevante es:
 
@@ -73,7 +101,8 @@ string(CONCAT RESOLVED_BUILD_PATH "${RUNTIME_BASE}" "/" "${WORKSPACE_NAME}")
 include(${RESOLVED_BUILD_PATH}/build.cmake)
 ```
 
-La configuración no se puede leer directamente:
+El usuario `level03` no puede leer directamente la configuración porque no
+tiene permisos sobre el directorio ni sobre el archivo `burbclave.conf`:
 
 ```bash
 ls -ld /etc/burbclave
@@ -81,25 +110,45 @@ ls -l /etc/burbclave/burbclave.conf
 cat /etc/burbclave/burbclave.conf
 ```
 
+`ls -ld /etc/burbclave` muestra los permisos del directorio sin listar su
+contenido. La opción `-d` hace que se consulte el directorio como entrada,
+en lugar de mostrar los archivos que contiene. Así se comprueba quién es su
+propietario y qué usuarios pueden acceder a él.
+
+`ls -l /etc/burbclave/burbclave.conf` muestra los permisos, el propietario y el
+grupo del archivo de configuración. Esta comprobación permite confirmar si
+`level03` puede leerlo.
+
+`cat /etc/burbclave/burbclave.conf` intenta mostrar el contenido del archivo.
+Si aparece `Permission denied`, se confirma que `level03` no tiene permisos
+suficientes para leer la configuración directamente.
+
 Resultado relevante:
 
 ```text
 drwx------ 2 flag03 flag03 ... /etc/burbclave
-Permission denied
+... Permission denied
+... Permission denied
 ```
 
-Aunque no podemos leer la configuración, el script revela que el runner
-incluirá un archivo llamado `build.cmake` desde una ruta determinada por esa
-configuración.
+`level03` no puede leer `/etc/burbclave/burbclave.conf` porque el directorio
+pertenece a `flag03`. Sin embargo, puede leer `CMakeLists.txt`, que indica que
+el servicio utiliza esa configuración para localizar y ejecutar `build.cmake`.
 
 ## 3. Encontrar el directorio escribible
 
-Se buscan directorios relacionados con Burbclave:
+Como `CMakeLists.txt` incluye `build.cmake` desde una ruta definida por la
+configuración protegida, buscamos directorios relacionados con Burbclave para
+localizar ese espacio de trabajo y comprobar si `level03` puede modificarlo:
 
 ```bash
-find / -xdev -iname '*burbclave*' \\
-	-printf '%M %u %g %p\\n' 2>/dev/null
+find / -xdev -iname '*burbclave*' -printf '%M %u %g %p\n' 2>/dev/null
 ```
+
+`find / -xdev -iname '*burbclave*'` busca desde la raíz directorios y archivos
+cuyo nombre contiene `burbclave`. `-xdev` evita atravesar otros sistemas de
+archivos, `-iname` ignora mayúsculas y minúsculas, `-printf` muestra permisos,
+propietario, grupo y ruta, y `2>/dev/null` oculta errores de acceso.
 
 Aparece el directorio de trabajo:
 
@@ -122,8 +171,10 @@ uid=1004(level03) gid=1006(level03) groups=1006(level03),988(burbclave),1001(lev
 drwxrwxr-x root burbclave /var/lib/burbclave/staging
 ```
 
-El usuario `level03` pertenece al grupo `burbclave`, así que puede escribir en
-`staging`:
+La salida de `id` muestra que `level03` pertenece a los grupos `level03`,
+`burbclave` y `levelgroup`. Como el directorio `staging` pertenece al grupo
+`burbclave` y sus permisos para ese grupo son `rwx` (lectura, escritura y
+acceso), `level03` puede crear archivos dentro de `staging`:
 
 ```bash
 touch /var/lib/burbclave/staging/test-level03
