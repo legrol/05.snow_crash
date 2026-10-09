@@ -57,6 +57,20 @@ montados, `-user flag03` filtra por propietario y `-ls` muestra los detalles
 de cada resultado. Así se puede identificar el script o programa que se
 ejecuta con la identidad de `flag03`.
 
+En una máquina ya utilizada pueden aparecer también archivos como estos:
+
+```text
+/tmp/level03_flag.txt
+/tmp/burbclave_flag03_listing.txt
+/tmp/level03_flag_errors.txt
+```
+
+Son artefactos temporales creados durante una explotación anterior y pueden
+contener la flag si el ejercicio ya se ejecutó. No los usamos como punto de
+partida ni como prueba de la vulnerabilidad: en una ejecución limpia pueden no
+existir. La resolución comienza investigando la configuración de CMake y el
+servicio periódico.
+
 ```bash
 find / -xdev -type f -perm -4000 -ls 2>/dev/null
 ```
@@ -67,7 +81,8 @@ permisos de su propietario, por lo que estos archivos pueden ser relevantes en
 una búsqueda de escalada de privilegios. En este nivel, la búsqueda sirve para
 comprobar si existe algún ejecutable SUID relacionado.
 
-El resultado relevante es:
+Entre los resultados de la búsqueda por propietario aparece el archivo de
+instrucciones relevante:
 
 ```text
 /opt/snowcrash/level03/CMakeLists.txt
@@ -131,9 +146,19 @@ drwx------ 2 flag03 flag03 ... /etc/burbclave
 ... Permission denied
 ```
 
-`level03` no puede leer `/etc/burbclave/burbclave.conf` porque el directorio
-pertenece a `flag03`. Sin embargo, puede leer `CMakeLists.txt`, que indica que
-el servicio utiliza esa configuración para localizar y ejecutar `build.cmake`.
+Aquí intervienen dos archivos diferentes, situados en rutas distintas:
+
+- `/etc/burbclave/burbclave.conf` es la configuración protegida del sistema y
+	`level03` no puede leerla porque el directorio pertenece a `flag03`.
+- `/opt/snowcrash/level03/CMakeLists.txt` es un archivo de instrucciones del
+	nivel que sí podemos leer.
+
+Aunque no podemos consultar el contenido de la configuración de `/etc`, el
+`CMakeLists.txt` revela qué hace el servicio con ella: la lee para calcular
+una ruta de trabajo y después intenta incluir, desde esa ruta, un archivo
+llamado `build.cmake`. Esta separación entre un archivo protegido en `/etc` y
+un archivo de instrucciones legible en `/opt` es la clave para buscar el
+directorio escribible del siguiente paso.
 
 ## 3. Encontrar el directorio escribible
 
@@ -147,8 +172,19 @@ find / -xdev -iname '*burbclave*' -printf '%M %u %g %p\n' 2>/dev/null
 
 `find / -xdev -iname '*burbclave*'` busca desde la raíz directorios y archivos
 cuyo nombre contiene `burbclave`. `-xdev` evita atravesar otros sistemas de
-archivos, `-iname` ignora mayúsculas y minúsculas, `-printf` muestra permisos,
-propietario, grupo y ruta, y `2>/dev/null` oculta errores de acceso.
+archivos, `-iname` ignora mayúsculas y minúsculas y `2>/dev/null` oculta
+errores de acceso. La opción `-printf` permite elegir el formato exacto de
+cada línea; sus marcadores se explican a continuación.
+
+En el formato de `-printf`, cada marcador representa un dato distinto:
+
+```text
+%M  permisos en formato simbólico, por ejemplo drwxrwxr-x
+%u  nombre del usuario propietario
+%g  nombre del grupo propietario
+%p  ruta completa del archivo o directorio
+\n  salto de línea
+```
 
 Aparece el directorio de trabajo:
 
@@ -163,6 +199,13 @@ id
 ls -la /var/lib/burbclave
 ls -la /var/lib/burbclave/staging
 ```
+
+`id` muestra el identificador numérico y el nombre del usuario de la sesión
+actual (`uid`), su grupo principal (`gid`) y todos los grupos adicionales a los
+que pertenece.
+En este caso, el dato decisivo es la pertenencia al grupo `burbclave`, porque
+ese grupo tiene permisos de escritura sobre `staging`. `ls -la` permite ver el
+propietario, el grupo y los permisos de cada directorio.
 
 Resultado relevante:
 
@@ -182,9 +225,33 @@ ls -l /var/lib/burbclave/staging/test-level03
 rm /var/lib/burbclave/staging/test-level03
 ```
 
+`touch` crea un archivo vacío para comprobar la escritura, `ls -l` confirma su
+propietario y sus permisos, y `rm` lo elimina después de la prueba. El archivo
+de prueba no forma parte del exploit; solo verifica que el permiso de grupo es
+realmente utilizable.
+
 ## 4. Confirmar la ejecución privilegiada
 
-El servicio y su temporizador se pueden consultar con:
+Antes de leer los archivos concretos, se buscan referencias a `burbclave` en
+las unidades de `systemd` y se consulta la lista de servicios y temporizadores:
+
+```bash
+grep -R -n 'burbclave' /etc/systemd/system 2>/dev/null
+systemctl list-units --type=service --all | grep -i burbclave
+systemctl list-timers --all --no-pager | grep -i burbclave
+```
+
+La primera orden usa `grep -R -n` para buscar recursivamente la palabra
+`burbclave` dentro de los archivos de configuración de `systemd`; `-n` muestra
+el número de línea y `2>/dev/null` oculta errores de permisos. La segunda usa
+`systemctl list-units` para mostrar todas las unidades de tipo servicio,
+incluidas las inactivas (`--all`), y filtra las que contienen `burbclave` sin
+distinguir mayúsculas con `grep -i`. La tercera hace lo mismo con los
+temporizadores: `list-timers --all` muestra los timers registrados y
+`--no-pager` evita abrir un paginador antes de aplicar el filtro.
+
+Estas órdenes permiten descubrir los nombres `burbclave.service` y
+`burbclave.timer`. Después se consultan sus definiciones y su estado:
 
 ```bash
 cat /etc/systemd/system/burbclave.service
@@ -209,18 +276,24 @@ OnUnitActiveSec=60s
 Unit=burbclave.service
 ```
 
+`OnUnitActiveSec=60s` indica que el temporizador vuelve a lanzar la unidad cada
+60 segundos. `Unit=burbclave.service` identifica el servicio que se ejecuta en
+cada ciclo.
+
 Por tanto, si colocamos un `build.cmake` en el directorio de trabajo, el
 servicio lo incluirá y lo ejecutará con los permisos de `flag03`.
 
 ## 5. Crear un payload de reconocimiento
 
-El script independiente utilizado para esta fase está disponible en
-[build-recon.cmake](build-recon.cmake). Para usarlo en la OVA, se puede copiar
-su contenido en la ruta de staging:
+Esta fase es necesaria para descubrir qué archivos puede leer el servicio como
+`flag03`. El recurso independiente utilizado está disponible en
+[build-recon.cmake](build-recon.cmake), pero ese archivo del repositorio no se
+copia automáticamente a la OVA. Su contenido se introduce manualmente en el
+archivo que el servicio incluirá:
 
-Primero se creó un archivo CMake que listara el directorio de `flag03` y
-guardara el resultado en `/tmp`. No se puede usar la salida normal porque el
-servicio tiene `StandardOutput=null`.
+El payload ejecuta `ls -la /home/flag03` como `flag03` y guarda el resultado en
+`/tmp`. No usamos la salida normal porque el servicio tiene
+`StandardOutput=null`, lo que descarta su salida estándar.
 
 ```bash
 cat > /var/lib/burbclave/staging/build.cmake <<'EOF'
@@ -231,6 +304,10 @@ execute_process(
 )
 EOF
 ```
+
+Después de crear el archivo, no se ejecuta `build.cmake` directamente. Hay que
+esperar a que el temporizador lance `burbclave.service`, porque ese servicio
+es el que lo incluye y lo ejecuta con los permisos de `flag03`.
 
 Tras la siguiente ejecución del temporizador:
 
@@ -253,14 +330,15 @@ La ruta del secreto era:
 /home/flag03/.flag
 ```
 
+Este payload solo realiza reconocimiento. La lectura de la flag se hace en el
+punto siguiente sustituyendo `build.cmake` por el payload de extracción.
+
 ## 6. Extraer la credencial
 
-El payload independiente de extracción está disponible en
+El recurso independiente de extracción está disponible en
 [build-extract.cmake](build-extract.cmake). Sustituye el archivo anterior por
-este contenido:
-
-Se sustituyó el payload por otro que leyera `.flag` y escribiera su contenido
-en un archivo temporal legible:
+el siguiente payload, que lee `.flag` y escribe su contenido en un archivo
+temporal legible:
 
 ```bash
 cat > /var/lib/burbclave/staging/build.cmake <<'EOF'
@@ -272,7 +350,7 @@ execute_process(
 EOF
 ```
 
-Después de la siguiente ejecución del timer:
+Después de la siguiente ejecución del temporizador:
 
 ```bash
 cat /tmp/level03_flag.txt
@@ -285,13 +363,24 @@ La credencial obtenida fue:
 b209ea91ad7a5c2a0b0f4e195ca4
 ```
 
+Este resultado confirma la cadena explicada en los puntos 2, 3 y 4: `level03`
+puede escribir `build.cmake` en `staging`, el servicio lo incluye con los
+permisos de `flag03` y el payload ha leído `/home/flag03/.flag`. El contenido
+obtenido permite continuar al siguiente nivel, demostrando que la escalada de
+privilegios era el objetivo técnico del ejercicio.
+
 ## 7. Conectarse a level04
 
-Desde el equipo anfitrión, cerrar la sesión actual y conectarse al siguiente
-nivel:
+Si la sesión actual sigue abierta, se sale de ella:
 
 ```bash
 exit
+```
+
+Después, desde la misma terminal del equipo anfitrión desde la que se abrió
+SSH, se inicia una nueva conexión al siguiente nivel:
+
+```bash
 ssh level04@localhost -p 2424
 ```
 
@@ -309,12 +398,9 @@ level04@snowcrash:~$
 
 ## Conclusión
 
-Un servicio periódico se ejecuta como `flag03` y carga un `build.cmake` desde un directorio
-en el que `level03` puede escribir por pertenecer al grupo `burbclave`.
+El archivo temporal contiene la flag y permite continuar al siguiente nivel,
+pero no es el objetivo técnico principal del ejercicio.
 
-El payload CMake permitió ejecutar `/bin/cat` con los permisos de `flag03` y
-leer `/home/flag03/.flag`. La credencial encontrada para `level04` es:
-
-```text
-b209ea91ad7a5c2a0b0f4e195ca4
-```
+La parte importante es demostrar la escalada de privilegios: `level03` controla
+el contenido de `build.cmake` y el servicio lo ejecuta como `flag03`. La lectura de
+`/home/flag03/.flag` es la consecuencia de esa ejecución privilegiada.
