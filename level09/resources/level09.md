@@ -72,9 +72,17 @@ Flag: %s
 Iheartpwnage
 ```
 
-La cadena `Iheartpwnage` destaca como posible token válido: aparece junto a
-los mensajes del programa, antes de la información de compilación, y tiene 12
-caracteres.
+La cadena `Iheartpwnage` destaca como posible token: aparece junto a los
+mensajes del programa y tiene 12 caracteres, la longitud que este valida. En
+este contexto, un token es la cadena que `da5id` espera recibir y comprobar; no
+es todavía la contraseña SSH de `level10`.
+
+Sabemos que debe recibirlo como argumento por la cadena de uso `Usage: %s
+<token>`. Los mensajes `Token format error`, `Invalid token` y `TOKEN ACCEPTED`
+muestran que el programa valida el valor recibido. La ruta `/home/flag09/.flag`
+y el mensaje `Flag: %s` indican qué protege esa validación: el binario solo
+revela la credencial cuando acepta el token. `strings` da estas pistas; la
+ejecución siguiente comprueba si `Iheartpwnage` es válido.
 
 ## 3. Validar el token
 
@@ -83,6 +91,9 @@ Se ejecuta el binario con la cadena encontrada:
 ```bash
 /opt/snowcrash/level09/da5id Iheartpwnage
 ```
+
+Este comando inicia `da5id` y le pasa `Iheartpwnage` como argumento. El
+programa valida esa cadena; si la acepta, muestra la credencial de `level10`.
 
 El programa aceptó los 12 bytes y leyó el flag con los privilegios de
 `flag09`:
