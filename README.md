@@ -37,13 +37,15 @@ En el sistema hay dos tipos principales de cuentas de usuario:
 	`flagbonus01`.
 
 El objetivo de cada nivel mandatory es obtener la flag protegida del usuario
-asociado. En esta OVA, esa flag es la contraseña utilizada para conectarse al
-siguiente nivel mediante SSH. El método cambia en cada ejercicio: puede ser un
-binario `setuid`, un servicio, una plantilla, un protocolo o un sandbox.
+asociado. En esta OVA, cada flag permite conectarse por SSH al siguiente nivel;
+la de `level10` cierra el recorrido mandatory y no tiene un nivel mandatory
+siguiente. El método cambia en cada ejercicio: puede ser un binario `setuid`,
+un servicio, una plantilla, un protocolo o un sandbox.
 
-Las guías de `resources/` documentan el recorrido real de cada nivel y los
-archivos `flag` contienen las credenciales recuperadas. Cada ejercicio tiene
-su propio mecanismo para revelar la flag.
+Las guías de `resources/` documentan el recorrido real de cada nivel. Los
+archivos `flag` de los niveles mandatory contienen las credenciales
+recuperadas; los bonus siguen pendientes de resolución y sus flags se
+completarán cuando se obtengan.
 
 ## Recursos
 
