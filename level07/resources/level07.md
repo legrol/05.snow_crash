@@ -21,10 +21,11 @@ Session validator v2.1.4 — restricted access
 You will never escape this
 ```
 
-Los comandos normales no funcionan como shell. Por ejemplo, `hostname` se
-interpreta como un nombre Python y `ls -la` produce errores de sintaxis.
-
-La prueba siguiente sí se evalúa:
+El comportamiento de la sesión es mixto: algunos comandos, como `ls -la` y
+`whoami`, funcionan normalmente, pero `hostname` se interpreta como un nombre
+Python y devuelve `Validator: name 'hostname' is not defined`. Para comprobar
+que también podemos introducir expresiones Python, probamos una expresión que
+no depende de comandos del sistema:
 
 ```python
 ().__class__
@@ -36,11 +37,15 @@ Resultado:
 <class 'tuple'>
 ```
 
-Esto confirma que podemos inspeccionar objetos Python desde el validador.
+`()` crea una tupla vacía y `.__class__` consulta su clase. El resultado
+confirma que el validador evalúa expresiones Python y permite inspeccionar
+atributos de objetos. Esta prueba no obtiene la credencial, pero proporciona
+el punto de partida para llegar a `object` y continuar la resolución.
 
 ## 2. Llegar hasta object
 
-Una tupla tiene como clase base a `object`:
+Partimos de la tupla vacía que ya utilizamos. `.__class__` devuelve su clase
+(`tuple`) y `.__base__` devuelve la clase base de `tuple`, que es `object`:
 
 ```python
 ().__class__.__base__
@@ -52,14 +57,17 @@ Resultado:
 <class 'object'>
 ```
 
-Desde `object` se pueden enumerar todas las subclases cargadas por el
-intérprete:
+`object` es la clase base común de los objetos Python. Su atributo
+`__subclasses__()` devuelve la lista de clases que el intérprete ya tiene
+cargadas:
 
 ```python
 ().__class__.__base__.__subclasses__()
 ```
 
-Entre las clases disponibles aparece:
+Entre esa lista buscamos `warnings.catch_warnings`, porque su método interno
+conserva una referencia a los módulos globales que necesitaremos en el paso
+siguiente:
 
 ```text
 <class 'warnings.catch_warnings'>
@@ -67,35 +75,58 @@ Entre las clases disponibles aparece:
 
 ## 3. Recuperar el módulo sys
 
-La clase `warnings.catch_warnings` conserva una referencia a sus variables
-globales. Podemos localizarla con una comprensión de listas:
+La clase `warnings.catch_warnings` conserva una referencia a las variables
+globales de su método `__init__`. Primero la localizamos con una comprensión de
+listas. La variable `c` representa cada clase de la lista y la condición deja
+solo la que tiene el nombre `catch_warnings`:
 
 ```python
 [c for c in ().__class__.__base__.__subclasses__() if c.__name__ == 'catch_warnings']
 ```
 
-Al intentar mostrar directamente sus globales, el validador bloquea nombres
-como `open` y `__import__`. Sin embargo, el módulo `sys` ya está cargado y se
-puede obtener desde esos globales:
+```text
+[<class 'warnings.catch_warnings'>]
+```
+
+`c.__init__` es el método que inicializa la clase y `.__globals__` permite
+acceder al diccionario de variables globales usado por ese método. El
+validador bloquea nombres como `open` y `__import__`, pero desde ese diccionario
+podemos recuperar el módulo `sys`, que ya está cargado:
 
 ```python
 [c.__init__.__globals__['sys'] for c in ().__class__.__base__.__subclasses__() if c.__name__ == 'catch_warnings']
 ```
 
-La inspección de `sys.modules` confirma que `os` ya está cargado:
+```text
+[<module 'sys' (built-in)>]
+```
+
+`sys.modules` es el registro de módulos que Python ya ha cargado. `os` es un
+módulo estándar que permite interactuar con el sistema operativo, por ejemplo
+ejecutar comandos. Al consultar `.keys()` vemos los nombres de los módulos y
+podemos comprobar que `os` está disponible sin tener que importarlo:
 
 ```python
 [c.__init__.__globals__['sys'].modules.keys() for c in ().__class__.__base__.__subclasses__() if c.__name__ == 'catch_warnings']
 ```
 
+```text
+...  '_collections_abc', 'genericpath', 'posixpath', 'os.path', 'os', '_sitebuiltins', '_distutils_hack', 'types', 'importlib._bootstrap', 'importlib._bootstrap_external', 'warnings', 'importlib', 'importlib._abc', ...
+```
+
 ## 4. Ejecutar el comando con os.system
 
-`os.popen()` fue bloqueado porque intenta importar internamente `subprocess`.
-La función `os.system()` ya está disponible y permite ejecutar directamente
-`cat` con los privilegios del proceso del validador.
+`sys.modules` solo nos ha confirmado que `os` está cargado. La función que
+usaremos es `os.system()`, que ejecuta un comando del sistema y devuelve su
+código de salida. Su funcionamiento queda confirmado al ejecutar la expresión
+final: el resultado `[0]` indica que el comando terminó correctamente. `os.popen()`
+no se utiliza porque el validador bloquea su intento de importar
+`subprocess`.
 
-El payload utilizado se encuentra en
-[sandbox-escape.expr](sandbox-escape.expr):
+La expresión utilizada se ha creado expresamente para documentar esta
+resolución y está guardada en el recurso auxiliar
+[sandbox-escape.expr](sandbox-escape.expr). No es un archivo de la OVA ni se
+obtiene desde el sandbox:
 
 ```python
 [c.__init__.__globals__['sys'].modules['os'].system('cat /home/flag07/.flag') for c in ().__class__.__base__.__subclasses__() if c.__name__ == 'catch_warnings']
