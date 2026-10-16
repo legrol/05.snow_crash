@@ -191,8 +191,6 @@ level03/resources/
 └── level03.md
 
 level04/resources/
-├── babel-extract.m4
-├── babel-recon.m4
 └── level04.md
 
 level05/resources/
@@ -241,10 +239,6 @@ Los archivos auxiliares tienen estas funciones:
 	`flag03`.
 - `build-extract.cmake` extrae la credencial de `level03` mediante el runner
 	de CMake ejecutado como `flag03`.
-- `babel-recon.m4` lista el directorio de `flag04` durante el procesamiento de
-	la plantilla Babel.
-- `babel-extract.m4` extrae la credencial de `level04` mediante la macro
-	`esyscmd` de `m4`.
 - `metaverse-exploit.wat` contiene el módulo WebAssembly textual utilizado para
 	leer temporalmente `/home/flag05/.flag`.
 - `raven-payload.conf` contiene la configuración temporal utilizada para
