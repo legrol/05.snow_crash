@@ -3,7 +3,7 @@
 ## Tipo de ejercicio
 
 Análisis de credenciales expuestas en la configuración y en los argumentos de
-un servicio `systemd`, junto con el reconocimiento de una pista de hash DES.
+un servicio `systemd`.
 
 ## Objetivo
 
@@ -57,47 +57,15 @@ La primera pista aparece al listar el directorio personal:
 ```bash
 ls -la
 cat README
-cat hash.txt
 ```
 
-La salida relevante de `hash.txt` es:
+El contenido del `README` es:
 
 ```text
-42hDRfypTqqnw --show
+Gargoyles never stop collecting.
 ```
 
-El valor que se puede comprobar como hash es `42hDRfypTqqnw`; la parte
-`--show` es texto adicional del archivo y no forma parte del hash.
-
-Este valor usa el formato tradicional `crypt` basado en DES, un esquema antiguo
-de contraseñas de Unix. En este formato, el resultado tiene 13 caracteres: los
-dos primeros (`42`) son la **sal criptográfica**, llamada **salt** en inglés,
-y los 11 restantes son el resultado codificado.
-
-Una **salt** es un dato adicional que se combina con la contraseña antes de
-calcular el hash. No es secreta ni es la contraseña. Su función es evitar que
-una misma contraseña produzca siempre exactamente el mismo hash: por ejemplo,
-la misma contraseña calculada con la salt `42` y con otra salt produciría
-resultados diferentes. Esto dificulta reutilizar tablas de hashes
-precalculados, aunque no soluciona la debilidad del algoritmo DES. En este
-formato, la salt aparece al principio del resultado, por eso los dos primeros
-caracteres son `42`.
-
-Este formato también tiene la limitación histórica de trabajar con contraseñas
-de hasta ocho caracteres.
-
-Python permite comprobar una posible contraseña usando el mismo algoritmo
-tradicional: `crypt.crypt("abcdefg", "42")` calcula el hash de `abcdefg` usando
-`42` como sal y devuelve una cadena que se puede comparar con el valor objetivo:
-
-```bash
-python3 -c 'import crypt; print(crypt.crypt("abcdefg", "42") == "42hDRfypTqqnw")'
-```
-
-El resultado es `True`. Sin embargo, esa contraseña no permite iniciar una
-sesión como `flag01`, porque su shell está configurado como `nologin`. Por eso
-el hash sirve como comprobación de la pista, pero la credencial útil para
-continuar se obtiene del servicio que se ejecuta como `flag01`.
+La referencia a `gargoyles` indica qué componente buscar en el siguiente paso.
 
 ## 3. Localizar el componente propio de la OVA
 
