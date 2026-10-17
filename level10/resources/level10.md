@@ -255,15 +255,16 @@ La firma completa `fc8c9815` se valida antes, en las líneas 47–49; su prefijo
 
 El archivo [enzo-injection.wat](enzo-injection.wat) es un recurso auxiliar
 creado expresamente para resolver este nivel; no viene en la OVA. Contiene un
-módulo WAT que emite exactamente el token anterior. Para usarlo, se transfiere
-a la OVA y se compila allí como WASM:
+módulo WAT que emite exactamente el token anterior. Para usarlo, se transfiere a la OVA y se compila allí como WASM. 
+
+Primero, desde una terminal del equipo anfitrión (no desde la sesión SSH), situado en la raíz del repositorio, se transfiere el archivo:
 
 ```bash
 scp -P 2424 level10/resources/enzo-injection.wat \
 	level10@localhost:/tmp/enzo-injection.wat
 ```
 
-Dentro de `level10@snowcrash`:
+Después, dentro de la sesión SSH de `level10@snowcrash`:
 
 ```bash
 wat2wasm /tmp/enzo-injection.wat -o /tmp/enzo-injection.wasm
