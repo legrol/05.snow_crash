@@ -295,7 +295,23 @@ La credencial obtenida fue:
 ne2searoevaevoem4ov4ar8ap
 ```
 
-## 6. Conectarse a level05
+## 6. Limpiar la plantilla
+
+Antes de salir del nivel, conviene eliminar las dos líneas `esyscmd` añadidas
+a `template.m4`, para dejar la plantilla como estaba y que el siguiente
+intento del ejercicio parta de un estado limpio:
+
+```bash
+sed -i '/esyscmd(`\/bin\/ls -la \/home\/flag04/d; /esyscmd(`\/bin\/cat \/home\/flag04\/\.flag/d' /var/lib/babel/templates/template.m4
+```
+
+Comprobamos que las líneas ya no están presentes:
+
+```bash
+tail -n 15 /var/lib/babel/templates/template.m4
+```
+
+## 7. Conectarse a level05
 
 Desde el equipo anfitrión, cerrar la sesión de `level04` y conectarse al
 siguiente nivel:
