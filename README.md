@@ -92,9 +92,9 @@ hacemos click en Reenvío de puertos y dejamos esta configuración:
 
 <br><br>
 
-Notar que hemos configurado en el Hot Anfitrión el puerto 2424, ya que el 4242 (recomendado) en 42 Málaga se haya ocupado por otros servicios.
+Notar que hemos configurado en el Host Anfitrión el puerto 2424, ya que el 4242 (recomendado) en 42 Málaga se haya ocupado por otros servicios.
 
-Según el tema de 42, se debe acceder a la máquina mediante SSH usando el puerto `4242` (nosotros gestionaremos el 2424). 
+Según el subject del proyecto Snow-Crash de 42, se debe acceder a la máquina mediante SSH usando el puerto `4242` (nosotros gestionaremos el 2424). 
 
 Ahora nos conectaremos vía SSH desde una terminal del equipo anfitrión con:
 
