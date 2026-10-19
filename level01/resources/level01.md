@@ -112,8 +112,24 @@ systemctl list-units --type=service --all | grep -i gargoyle
 systemctl status gargoyle.service --no-pager
 ```
 
-Estas búsquedas permiten descubrir el nombre de la unidad y confirmar si está
-activa. Después se inspecciona su definición:
+`grep -R -n 'gargoyle' /etc/systemd/system` busca recursivamente (`-R`) la
+palabra `gargoyle` en las unidades de `systemd` definidas por el administrador,
+mostrando el archivo y el número de línea (`-n`). Con `2>/dev/null` se ocultan
+los errores de permisos.
+
+`systemctl list-units --type=service --all` lista todos los servicios que
+conoce `systemd`, incluidos los inactivos o fallidos (`--all`). El filtro
+`grep -i gargoyle` conserva solo las líneas que contienen `gargoyle`, sin
+distinguir mayúsculas de minúsculas.
+
+`systemctl status gargoyle.service --no-pager` muestra el estado, el usuario,
+el PID y los últimos registros del servicio. `--no-pager` imprime todo
+directamente, sin abrir `less`.
+
+Estas comprobaciones permiten confirmar que `/opt/snowcrash/level01/gargoyle`
+no es solo un archivo, sino el proceso gestionado por el servicio `gargoyle`.
+
+Después se inspecciona su definición:
 
 ```bash
 cat /etc/systemd/system/gargoyle.service
