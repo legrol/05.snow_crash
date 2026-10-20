@@ -61,6 +61,37 @@ integrity: 91%` y no contiene la credencial.
 
 ## 2. Analizar el servicio
 
+El módulo `metaverse.wasm` no se ejecuta solo: algo tiene que lanzarlo. En
+sistemas con `systemd` esa tarea suele recaer en un servicio, así que buscamos
+si existe alguno relacionado con el nombre del nivel (`metaverse`):
+
+```bash
+systemctl list-units --type=service --all | grep -i metaverse
+```
+
+`--all` incluye también las unidades inactivas (un servicio `oneshot` termina
+tras ejecutarse y no aparecería de otro modo) y `grep -i` filtra por nombre sin
+distinguir mayúsculas. Resultado:
+
+```text
+metaverse.service    loaded    inactive    dead    Metaverse WASM runtime (one-shot)
+```
+
+Aparece `metaverse.service`, inactivo porque ya terminó su ejecución. Como un
+servicio `oneshot` inactivo debe ser lanzado periódicamente por algo, buscamos
+si hay un temporizador asociado:
+
+```bash
+systemctl list-timers --all | grep -i metaverse
+ls /etc/systemd/system | grep -i metaverse
+```
+
+Esto revela que existe `metaverse.timer`. El `ls` lista el directorio donde
+`systemd` guarda las unidades definidas por el administrador y, filtrado por
+`metaverse`, confirma que ambos archivos (`metaverse.service` y
+`metaverse.timer`) están presentes. Ya podemos inspeccionar su configuración y
+el estado del servicio:
+
 ```bash
 cat /etc/systemd/system/metaverse.service
 cat /etc/systemd/system/metaverse.timer
@@ -101,6 +132,12 @@ El temporizador ejecuta el módulo aproximadamente cada 30 segundos:
 ```ini
 OnUnitActiveSec=30s
 ```
+
+Con `systemctl status metaverse.service --no-pager` vemos el estado actual del
+servicio (`inactive (dead)` tras su última ejecución, al ser de tipo
+`oneshot`), si terminó correctamente (`Main PID` y código de salida) y las
+últimas líneas de su log, útiles para detectar errores recientes sin tener que
+abrir un paginador.
 
 ## 3. Confirmar la vulnerabilidad de permisos
 
