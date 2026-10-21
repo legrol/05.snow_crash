@@ -58,7 +58,22 @@ El binario contiene información legible internamente. Se puede extraer con:
 strings /opt/snowcrash/level00/hiro
 ```
 
-Entre la salida aparece la siguiente cadena, que corresponde a la credencial del nivel:
+`strings` extrae las secuencias de caracteres imprimibles que encuentra en el
+binario. La salida completa no es una lista limpia: contiene nombres de
+símbolos, rutas de librerías y fragmentos de código máquina interpretados
+como texto, por lo que es habitual que líneas cercanas a la credencial
+incluyan caracteres que no forman parte de ella. Es posible que la línea
+buscada aparezca junto a otros caracteres pegados, por ejemplo:
+
+```text
+>@f2av5il02puano7naaf6adaf3a
+```
+
+El prefijo `>@` no es parte de la credencial: son bytes contiguos en el
+binario que `strings` interpreta como caracteres imprimibles porque
+preceden sin separador a la cadena real, pero no forman una palabra con
+sentido ni tienen la longitud ni el formato alfanumérico homogéneo del resto
+de la cadena. La credencial es solo la parte alfanumérica continua:
 
 ```text
 f2av5il02puano7naaf6adaf3a
