@@ -210,16 +210,42 @@ La salida relevante es:
 260:            if (UNLIKELY(!CHECK_STATE(&ctx, STATE_ADMIN))) {
 ```
 
-Lee estas líneas en orden:
+Antes de seguir el flujo, miramos qué hace la macro `CHECK_STATE` en sí misma
+(líneas 83-86). Es un operador ternario con una condición de entrada:
+
+```text
+CHECK_STATE(ctx, required) =
+    si required == STATE_ADMIN:
+        devuelve (ctx->state >= STATE_AUTH)   // línea 85
+    si no:
+        devuelve (ctx->state == required)     // línea 86
+```
+
+Es decir, la macro no compara siempre igualdad de estados. Cuando a quien la
+llama le interesa proteger una acción con `required = STATE_ADMIN`, la macro
+decide ignorar `required` y, en su lugar, comprueba `ctx->state >=
+STATE_AUTH`. Como `STATE_AUTH` vale `1` y `STATE_ADMIN` vale `2` (línea 38-40),
+esa condición es cierta tanto en `STATE_AUTH` como en `STATE_ADMIN`: basta con
+haber superado `STATE_INIT` para que la macro devuelva "verdadero", aunque se
+le haya pedido comprobar el nivel más alto. Esto parece pensado para
+simplificar el caso `STATE_ADMIN` (todo lo que sea igual o superior a `AUTH`
+vale), pero en la práctica anula la protección: nunca exige llegar realmente a
+`STATE_ADMIN`.
+
+Con esto en mente, seguimos el flujo de la conexión:
 
 1. `HELLO` deja la conexión en `STATE_AUTH` (línea 236). Un `AUTH` válido la
-	cambiaría a `STATE_ADMIN` (línea 251).
-2. La llamada que protege `CMD_ADMIN` pasa `STATE_ADMIN` como segundo
-	argumento de `CHECK_STATE` (línea 260). Ese argumento ocupa el lugar de
-	`required` en la macro.
-3. Como `required` vale `STATE_ADMIN`, se usa la comparación de la línea 85:
-	`ctx->state >= STATE_AUTH`. Por eso `STATE_AUTH`, alcanzado solo con
-	`HELLO`, ya supera la comprobación y permite `CMD_ADMIN` sin `AUTH`.
+	cambiaría a `STATE_ADMIN` (línea 251), pero no es obligatorio pasar por
+	ahí para seguir enviando comandos.
+2. La rama que atiende `CMD_ADMIN` (línea 259) llama a
+	`CHECK_STATE(&ctx, STATE_ADMIN)` (línea 260): sustituye `required` por
+	`STATE_ADMIN`, así que entra en la primera rama de la macro explicada
+	arriba.
+3. Esa rama evalúa `ctx->state >= STATE_AUTH`, no `ctx->state ==
+	STATE_ADMIN`. Como el estado tras `HELLO` ya es `STATE_AUTH` (que cumple
+	`>= STATE_AUTH`), la comprobación se satisface sin haber ejecutado nunca
+	`AUTH`. El resultado es que `CMD_ADMIN` queda accesible solo con `HELLO`,
+	sin necesidad de conocer la clave de 32 bytes.
 
 El daemon está activo:
 
