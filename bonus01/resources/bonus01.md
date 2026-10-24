@@ -230,6 +230,8 @@ sesión SSH de `bonus01`):
 find /home/login42/sgoinfre -iname '*SnowCrash*' 2>/dev/null | head -20
 find /sgoinfre/students/login42 -iname '*SnowCrash*' 2>/dev/null | head -20
 ```
+En las rutas del ejemplo, `login42` es el nombre de usuario del anfitrión;
+sustitúyelo si tu ruta es distinta.
 
 Rutas típicas en este proyecto:
 
