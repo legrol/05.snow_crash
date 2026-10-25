@@ -163,3 +163,4 @@ el sandbox Python, que permite acceder a `object.__subclasses__()`, encontrar
 `warnings.catch_warnings`, recuperar `sys.modules` y reutilizar el módulo `os`
 ya cargado. `os.system()` ejecuta `cat /home/flag07/.flag` y revela la
 credencial de `level08`.
+
