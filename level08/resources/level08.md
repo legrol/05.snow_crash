@@ -359,3 +359,4 @@ No se modificó ningún archivo de la OVA. La solución aprovecha únicamente el
 socket Unix ya expuesto por el daemon y un error en la comprobación de estados:
 `ADMIN` se acepta después de `HELLO`, aunque nunca se haya completado la
 autenticación. El daemon devuelve entonces la credencial de `level09`.
+
