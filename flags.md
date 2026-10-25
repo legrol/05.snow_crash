@@ -30,4 +30,4 @@ Credenciales de entrada y flags recuperadas para los niveles bonus:
 | Bonus02 | `fa6v5ateaw21peobuub8ipe6s` | `cfiioecfib9aobid1abfa0ci8` |
 | Bonus03 | `cfiioecfib9aobid1abfa0ci8` | `mof3b3iud5c3p35bsv9aua0bj` |
 | Bonus04 | `mof3b3iud5c3p35bsv9aua0bj` | `oo0eoaiia5ei8oo9xasah2ihu` |
-| Bonus05 | `oo0eoaiia5ei8oo9xasah2ihu` | `7oa2eihe3ohohzee5gob2aing` |
+| Bonus05 | `oo0eoaiia5ei8oo9xasah2ihu` | `xxx` |
