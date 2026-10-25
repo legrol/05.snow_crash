@@ -292,4 +292,5 @@ Los archivos auxiliares tienen estas funciones:
 	directorio spool escribible por el grupo del usuario.
 - **bonus04:** inyección de comandos a través de una configuración YAML
 	escribible por grupo y procesada periódicamente por un servicio privilegiado.
-- **bonus05:**
+- **bonus05:** carga de un módulo de kernel controlado por el atacante
+	mediante un binario con la capability Linux `cap_sys_module`.
