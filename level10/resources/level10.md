@@ -320,3 +320,4 @@ El boss fight `level10` cierra el recorrido mandatory. La flag
 construye comandos con datos no escapados. Se reconstruyó el formato del token,
 se calculó una firma válida que selecciona `logger`, se inyectó `cat` y se
 restauró el WASM original tras recuperar la flag final del recorrido.
+
