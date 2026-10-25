@@ -62,11 +62,60 @@ Juanita understood things others didn't bother to read.
 ```
 
 Detalle importante del `id`: el usuario pertenece al grupo **`juanita_grp`**
-(`4011`). Ese grupo tiene permiso de **escritura** sobre el YAML de
-configuración.
+(`4011`). Esto por sí solo no demuestra que pueda modificar la configuración;
+primero hay que localizar el archivo de configuración. Se busca en `/etc`
+porque es la ruta convencional en Linux para los ficheros de configuración
+del sistema, y el nombre `juanita` ya apareció como pista (grupo
+`juanita_grp`, frase del home):
 
-La cuenta `flagbonus04` existe con shell nologin (no se usa login interactivo
-con ese usuario; la flag se obtiene a través del servicio).
+```bash
+ls -la /etc/juanita/
+```
+
+Al ver `config.yaml` en el listado, se pueden consultar sus permisos:
+
+```bash
+ls -l /etc/juanita/config.yaml
+```
+
+La salida documentada es:
+
+```text
+-rw-rw-r--  1 root juanita_grp 3722 ... config.yaml
+```
+
+El grupo propietario es `juanita_grp` y tiene permiso de escritura (`rw-`).
+Como `id` confirma que `bonus04` pertenece a ese grupo, puede modificar el
+YAML existente.
+
+Para comprobar la shell configurada para `flagbonus04`, consulta la base de
+cuentas del sistema:
+
+```bash
+getent passwd flagbonus04
+```
+
+La última columna de la salida es la shell; si muestra `/usr/sbin/nologin`,
+esa cuenta no permite iniciar una sesión interactiva. Para localizar las
+unidades de systemd relacionadas con Juanita, lista los archivos de unidad:
+
+```bash
+systemctl list-unit-files | grep -i juanita
+```
+
+```text
+juanita.service                              static          -
+juanita.timer                                enabled         enabled
+```
+
+Consultamos la definición del servicio:
+
+```bash
+systemctl cat juanita.service
+```
+
+La línea `User=flagbonus04` confirma que el servicio se ejecuta como esa
+cuenta. La sección 3 muestra la salida de la unidad.
 
 ---
 
@@ -144,7 +193,13 @@ Implicaciones:
 
 ## 4. Lógica relevante de `juanita.py`
 
-Constantes:
+> **Nota:** los bloques de esta sección son fragmentos del **código fuente**
+> de `juanita.py` (lenguaje Python), copiados aquí solo para explicar qué hace
+> el script. **No son comandos**: no se pegan en la terminal `bash` de SSH. El
+> propio script ya se ejecuta automáticamente cada ~60 segundos a través del
+> timer `juanita.timer` visto en la sección 3; no hace falta lanzarlo a mano.
+
+El script define estas rutas:
 
 ```python
 CONFIG_PATH = "/etc/juanita/config.yaml"
@@ -152,24 +207,27 @@ LOG_PATH    = "/var/log/juanita/juanita.log"
 PID_FILE    = "/var/run/juanita.pid"
 ```
 
-Carga de configuración:
+Al arrancar, `juanita.py` abre y parsea el YAML de configuración:
 
 ```python
 with open(config_path, "r", encoding="utf-8") as fh:
     cfg = yaml.safe_load(fh)
 ```
 
-Se usa **`yaml.safe_load`**: no hay RCE por deserialización de objetos YAML
-arbitrarios. El vector no es “YAML unsafe”, sino el **contenido del campo
-`command`**.
+Usa `yaml.safe_load`, que **no** permite ejecutar código solo por el formato
+del YAML (a diferencia de `yaml.load` sin `Loader` seguro). Es decir, el fallo
+de seguridad de este nivel **no** está en cómo se parsea el YAML, sino en
+**qué hace el script después con uno de los valores leídos** (el campo
+`command`, visto más abajo).
 
-Validación mínima (`_validate_config`):
+Después, el script comprueba que la configuración tenga una forma mínima
+(función `_validate_config`):
 
 - Deben existir las claves de primer nivel: `metadata`, `services`, `defaults`.
 - Debe existir `services.executor`.
 - `services.executor` debe ser un diccionario con clave **`command`**.
 
-Ejecución:
+Y finalmente ejecuta ese comando:
 
 ```python
 command = executor_cfg["command"]
@@ -183,8 +241,13 @@ result = subprocess.run(
 )
 ```
 
-`shell=True` implica que el string de `command` se interpreta por un shell.
-Cualquier comando válido en ese string se ejecuta **como `flagbonus04`**.
+Aquí está el problema: `shell=True` hace que `subprocess.run` entregue el
+texto de `command` a una shell (`/bin/sh`) para que lo interprete, tal cual
+escribirías un comando en la terminal. Como el script corre con el usuario
+`flagbonus04` (según vimos en `juanita.service`), **cualquier comando que se
+escriba en ese campo `command` del YAML se ejecuta con los privilegios de
+`flagbonus04`**. Si `bonus04` puede modificar ese YAML (sección 5), puede
+controlar qué comando se ejecuta.
 
 ---
 
@@ -210,10 +273,12 @@ Comprobación:
 ```bash
 touch /etc/juanita/test_write
 # touch: cannot touch '...': Permission denied
-
-# Sí se puede sobrescribir el fichero existente:
-# cat > /etc/juanita/config.yaml << 'EOF' ...
 ```
+
+Crear un fichero nuevo falla (el directorio no es escribible por el grupo),
+pero sí se puede **sobrescribir el fichero existente** `config.yaml`, porque
+ese archivo sí tiene permiso de escritura de grupo. El procedimiento completo
+para sobrescribirlo se muestra en la sección 6 (Explotación).
 
 El YAML original incluye mucho ruido operativo (`network`, `storage`,
 `alerting`, etc.). Solo importan las secciones que exige el validador y el
@@ -249,6 +314,14 @@ cat /etc/juanita/config.yaml
 ```
 
 Esperar al timer (hasta ~60–70 s):
+
+Este bucle sondea cada 5 segundos, hasta 15 veces, si ya existe
+`/tmp/juanita_flag`. Cuando el `.timer` dispare `juanita.service` (sección 3),
+`juanita.py` leerá el YAML modificado y ejecutará el `command` indicado que
+copia la `.flag` de `flagbonus04` a `/tmp/juanita_flag` y le da permiso de
+lectura (`chmod 644`). En cuanto el archivo aparece, el bucle lo detecta,
+muestra su contenido y termina (`break`); las líneas finales (`ls -la` y
+`cat`) son una comprobación adicional por si el bucle ya terminó.
 
 ```bash
 for i in $(seq 1 15); do
